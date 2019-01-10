@@ -1,11 +1,28 @@
-Restaurant Table booking system
+# Restaurant Table booking system
 
-Description: A web service which will facilate restaurant owners to manage table booking and allow customers to make table reservations.
+A web service which will facilate restaurant owners to manage table booking and allow customers to make table reservations.
 
 
 NOTE: This is a tentative backend system design. Further discussion might be needed and a lot of reservation related challenges are not considered - eg: restaurant might have special timing for some particular day. As this is just going to be prototype minimalistic approach is considered.
 
-Database Schema
+## Starting the API in stagging mode
+
+    node index.js
+
+On this command a http server will run in staging environment and start listening to port 3000. 
+This can be tested by following URI
+    
+    http://localhost:3000/ping
+
+### Starting in production mode
+    
+    NODE_ENV=production JWT_SECRET=<secret code for JWT> MONGO_URL=<url for mongoDB> node index.js
+
+## Configuration
+Modify values in config/index.js for custom configuration.
+
+## Database Schema
+
 RestaurantOwner: {
 	firstName: String,
 	lastName: String,
@@ -63,7 +80,7 @@ Booking: {
 each collection will have _id by default
 
 
-Proposed API routes
+## Proposed API routes
 
 /user
 	POST - create customer account
