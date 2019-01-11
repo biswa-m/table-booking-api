@@ -55,19 +55,16 @@ CustomerSchema.methods.generateJWT = function() {
 
 CustomerSchema.methods.toAuthJSON = function() {
 	return {
-		firstName: this.firstName,
-		lastName: this.lastName,
+		name: this.name,
 		email: this.email,
 		token: this.generateJWT()
 	};
 };
 
 CustomerSchema.methods.getUserJSON = function() { return {
-		firstName: this.firstName,
-		lastName: this.lastName,
+		name: this.name,
 		email: this.email,
-		phone: this.phone,
-		restaurant: this.restaurant
+		phone: this.phone
 	};
 };
 

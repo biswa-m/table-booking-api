@@ -141,3 +141,19 @@ each collection will have _id by default
 
 	DELETE - Delete a book
 	Permission - Customer, RestaurantOwner
+
+## Impleted API routes
+
+/user
+	POST - create customer account
+		Permission - self
+	PUT - update customer details.
+		Permission - self
+	GET - get customer data.
+		Permission - self
+
+/user/login
+	POST - validate customer login and return jwt token
+		Permission - self
+
+

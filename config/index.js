@@ -13,7 +13,7 @@ environments.staging = {
 	'mongodb' : {
 		'URL' : 'mongodb://localhost:27017/',
 		'option' : {
-			'dbName' : 'tableBooking-dev',
+			'dbName' : 'RTBS-dev',
 			'useNewUrlParser' : true
 		}
 	}
@@ -27,7 +27,7 @@ environments.production = {
 	'mongodb' : {
 		'URL' : process.env.MONGO_URL || 'mongodb://localhost:27017/',
 		'option' : {
-			'dbName' : 'tableBooking',
+			'dbName' : 'RTBS',
 			'useNewUrlParser' : true
 		}
 	}
