@@ -4,9 +4,12 @@ var	mongoose = require('mongoose');
 var bodyParser = require('body-parser');
 
 var config = require('./config');
+
+// Database models
 var RestaurantOwner = require('./models/RestaurantOwner');
 var Customer = require('./models/Customer');
 var Restaurant = require('./models/Restaurant');
+var Table = require('./models/Table');
 
 var app = express();
 
