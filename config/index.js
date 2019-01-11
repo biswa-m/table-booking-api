@@ -9,6 +9,7 @@ var environments = {};
 environments.staging = {
 	'port' : 3000,
 	'envName' : 'staging',
+	'secret' : 'ThisIsSecretCodeForJWT',
 	'mongodb' : {
 		'URL' : 'mongodb://localhost:27017/',
 		'option' : {
@@ -22,6 +23,7 @@ environments.staging = {
 environments.production = {
 	'port' : 5000,
 	'envName' : 'production',
+	'secret' : process.env.JWT_SECRET || 'ThisIsSecretCodeForJWT',
 	'mongodb' : {
 		'URL' : process.env.MONGO_URL || 'mongodb://localhost:27017/',
 		'option' : {
