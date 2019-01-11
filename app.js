@@ -10,6 +10,7 @@ var RestaurantOwner = require('./models/RestaurantOwner');
 var Customer = require('./models/Customer');
 var Restaurant = require('./models/Restaurant');
 var Table = require('./models/Table');
+var Booking = require('./models/Booking');
 
 var app = express();
 
