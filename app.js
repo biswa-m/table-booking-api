@@ -5,6 +5,7 @@ var bodyParser = require('body-parser');
 
 var config = require('./config');
 var RestaurantOwner = require('./models/RestaurantOwner');
+var Customer = require('./models/Customer');
 
 var app = express();
 
