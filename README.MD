@@ -21,6 +21,25 @@ This can be tested by following URI
 ## Configuration
 Modify values in config/index.js for custom configuration.
 
+## Payload Syntax
+Default structure and valid keys to send JSON data on payload.
+
+	{
+		'user': {
+			'name': '',
+			'firstName': '',
+			'lastName': '',
+			'phone': '',
+			'email': '',
+			'password': ''
+		}
+	}
+
+## Authorization
+Send authorization token in headers
+
+	'Authorization': 'Bearer <token>'
+
 ## Database Schema
 
 RestaurantOwner: {
@@ -156,4 +175,6 @@ each collection will have _id by default
 	POST - validate customer login and return jwt token
 		Permission - self
 
-
+/user/restaurant/login
+	POST - validate RestaurantOwner login and return jwt token
+		Permission - self

@@ -5,5 +5,6 @@ router.get('/ping', function(req, res, next){
 });
 
 router.use('/user', require('./user/customer'));
+router.use('/user', require('./user/restaurant'));
 
 module.exports = router;
