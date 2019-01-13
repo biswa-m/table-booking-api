@@ -197,3 +197,4 @@ each collection will have _id by default
 
 /restaurant
 	POST - Create new restaurant by RestaurantOwner
+	GET - Get restaurants owned by the RestaurantOwner

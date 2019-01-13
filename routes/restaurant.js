@@ -33,4 +33,23 @@ router.post('/', auth.required, function(req, res, next) {
 	}).catch(next);
 });
 
+/*
+ * Get restaurants own by restaurantOwner
+ * required data: Authentication token
+ */
+router.get('/', auth.required, function(req, res, next) {
+	RestaurantOwner.findById(req.user.id).then(function(restaurantOwner) {
+		if (!restaurantOwner) return res.sendStatus(401);
+
+		Restaurant.find({admin: req.user.id}).then(function(restaurants) {
+			var restauratnsDetails = [];
+			restaurants.forEach(function(restaurant) {
+				restauratnsDetails.push(restaurant.viewJSON());
+			});
+
+			return res.json({restaurants: restauratnsDetails});
+		}).catch(next);
+	}).catch(next);
+});
+
 module.exports = router;
