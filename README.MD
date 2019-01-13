@@ -32,6 +32,22 @@ Default structure and valid keys to send JSON data on payload.
 			'phone': '',
 			'email': '',
 			'password': ''
+		},
+		'restaurant': {
+			'name': '',
+			'address': '',
+			'businessHours': {
+				'sunday': {
+					'start': '1030',
+					'end': '1845'
+				},
+				'monday': {
+					'start': '1030',
+					'end': '1845'
+				},
+				...
+				...
+			}
 		}
 	}
 
@@ -178,3 +194,6 @@ each collection will have _id by default
 /user/restaurant/login
 	POST - validate RestaurantOwner login and return jwt token
 		Permission - self
+
+/restaurant
+	POST - Create new restaurant by RestaurantOwner

@@ -1,6 +1,13 @@
 var mongoose = require('mongoose');
 
+var validateData = require('../helpers/validateData');
+
 var ObjectId = mongoose.Schema.Types.ObjectId;
+
+var timeSchema = {
+	start: Number,
+	end: Number
+}
 
 var RestaurantSchema = new mongoose.Schema({
 	name: {
@@ -16,40 +23,41 @@ var RestaurantSchema = new mongoose.Schema({
 	},
 	admin: {
 		type: [{type: ObjectId, ref: 'RestaurantOwner'}],
-		required: [true, "can't be blank"],
+		required: [true, "can't be blank"]
 	},
 	verified: Boolean,
 	businessHours: {
-		sunday: {
-			start: Date,	
-			end: Date
-		},
-		monday: {
-			start: Date,	
-			end: Date
-		},
-		tuesday: {
-			start: Date,	
-			end: Date
-		},
-		wednesday: {
-			start: Date,	
-			end: Date
-		},
-		thursday: {
-			start: Date,	
-			end: Date
-		},
-		friday: {
-			start: Date,	
-			end: Date
-		},
-		saturday: {
-			start: Date,	
-			end: Date
-		}
+		sunday: timeSchema,
+		monday: timeSchema,
+		tuesday: timeSchema,
+		wednesday: timeSchema,
+		thursday: timeSchema,
+		friday: timeSchema,
+		saturday: timeSchema
 	}
 });
+
+RestaurantSchema.methods.setBusinessHours = function(data) {
+	if (!data) return;
+
+	var businessHours = this.businessHours;
+	const days = Object.keys(businessHours);
+
+	days.forEach(function(day) {
+		if (!data[day]) return;
+
+		if (!validateData.time(data[day].start)
+					|| !validateData.time(data[day].end)
+					|| data[day].start >= data[day].end) {
+			var err = new Error('Invalid business hours');
+			err.name = 'ValidationError';
+			throw err;
+		}
+
+		businessHours[day].start = data[day].start;
+		businessHours[day].end = data[day].end;
+	});
+};
 
 RestaurantSchema.methods.viewJSON = function() {
 	return {
