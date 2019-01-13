@@ -40,12 +40,11 @@ app.use(function(req, res, next) {
 });
 
 // Error handlers
-if (config.envName === 'development') {
+if (config.envName === 'staging') {
 	app.use(function(err, req, res, next) {
 		console.log(err.stack);
 
-		res.status(err.status || 500);
-
+		res.status(err.status || (err.name == 'ValidationError') ? 400 : 500);
 		res.json({
 			'errors': {
 				message: err.message,
@@ -55,7 +54,7 @@ if (config.envName === 'development') {
 	});
 } else {
 	app.use(function(err, req, res, next) {
-		res.status(err.status || 500);
+		res.status(err.status || (err.name == 'ValidationError') ? 400 : 500);
 		res.json({
 			'errors': {
 				'message': err.message,

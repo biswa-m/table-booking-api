@@ -44,7 +44,7 @@ CustomerSchema.methods.setPassword = function(password){
 CustomerSchema.methods.generateJWT = function() {
 	var today = new Date();
 	var exp = new Date(today);
-	exp.setDate(today.getDate() + 1000); // token will valid for 1 day
+	exp.setDate(today.getDate() + 1); // token will valid for 1 day
 
 	return jwt.sign({
 		id: this._id,
