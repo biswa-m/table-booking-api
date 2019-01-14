@@ -11,4 +11,7 @@ router.use('/user', require('./user/restaurant'));
 // Create, update, read and delete restaurant by restaurant owner
 router.use('/restaurant', require('./restaurant'));
 
+// Add, read, modify and delete tables by restaurant owner
+router.use('/table', require('./table'));
+
 module.exports = router;

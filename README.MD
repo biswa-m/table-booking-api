@@ -43,12 +43,23 @@ Default structure and valid keys to send JSON data on payload.
 					'end': '1845'
 				},
 				'monday': {
-					'start': '1030',
-					'end': '1845'
+					'start': '0',
+					'end': '0'
 				},
 				...
 				...
 			}
+		},
+		'tables': [
+			'tableIdentifier': '',
+			'capacity': '',
+			'description': ''
+		],
+		'table': {
+			'id': '',
+			'tableIdentifier': '',
+			'capacity': '',
+			'description': ''
 		}
 	}
 
@@ -202,3 +213,8 @@ each collection will have _id by default
 	PUT - Update restaurant details by RestaurantOwner
 
 	set business hours to {start: 0, end: 0} for closed day
+
+/table
+	POST - Add table(s) to their restaurant by RestaurantOwner
+	PUT - Update single table details
+	GET - List tables for particular restaurant
