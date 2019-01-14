@@ -1,33 +1,44 @@
 var mongoose = require('mongoose');
 
+var bookingValidator = require('../helpers/bookingValidator');
+
 var ObjectId = mongoose.Schema.Types.ObjectId;
 
 var BookingSchema = new mongoose.Schema({
+	customer: {
+		type: ObjectId,
+		required: [true, "can't be blank"]
+	},
 	restaurant: {
 		type: ObjectId,
 		ref: 'Restaurant',
-		required: true
-		//validate:
+		required: [true, "Can't be blank"],
+		validate: {
+			isAsync: true,
+			validator: bookingValidator.restaurant,
+			message: 'Invalid restaurant'
+		}
 	},
 	tables: {
 		type: [{type: ObjectId, ref: 'Table'}],
 		default: undefined,
-		required: [true, "can't be blank"],
+		required: [true, "can't be blank"]
 	},
 	noOfPersons: {
 		type: Number, // TODO integer
 		required: [true, "can't be blank"],
+		validate: {
+			isAsync: true,
+			validator: bookingValidator.noOfPersons,
+			message: 'No of persons can not be more than table capacity'
+		}
 	},
 	bookingFrom: {
 		type: Date,
-		required: [true, "can't be blank"]
+		required: [true, "can't be blank"],
 	},
 	bookingTo: {
 		type: Date,
-		required: [true, "can't be blank"]
-	},
-	customer: {
-		type: ObjectId,
 		required: [true, "can't be blank"]
 	},
 	bookingStatus: {
@@ -53,6 +64,11 @@ var BookingSchema = new mongoose.Schema({
 	}
 }, {timestamps: true});
 
+BookingSchema.methods.setTime = function(from, to) {
+	this.bookingFrom = from;
+	this.bookingTo = to;
+};
+
 BookingSchema.methods.toUserJSON = function() {
 	return {
 		restaurant: this.restautant,
@@ -73,6 +89,7 @@ BookingSchema.methods.toAuthUserJSON = function() {
 		bookingStatus: this.bookingStatus
 	};
 };
+
 
 var Booking = mongoose.model('Booking', BookingSchema);
 

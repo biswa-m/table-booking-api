@@ -60,6 +60,15 @@ Default structure and valid keys to send JSON data on payload.
 			'tableIdentifier': '',
 			'capacity': '',
 			'description': ''
+		},
+
+		'booking': {
+			'restaurant': ObjectId,
+			'tables': [ObjectId],
+			'noOfPersons': Integer,
+			'bookingFrom': DateTime,
+			'bookingTo': DateTime,
+			'customer': ObjectId,
 		}
 	}
 
@@ -221,3 +230,7 @@ each collection will have _id by default
 
 /restaurants
 	GET - list all verfied restaurants for public view
+
+/booking
+	POST - Create booking in case its available
+		return bookingId
