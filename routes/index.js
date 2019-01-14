@@ -11,6 +11,9 @@ router.use('/user', require('./user/restaurant'));
 // Create, update, read and delete restaurant by restaurant owner
 router.use('/restaurant', require('./restaurant'));
 
+// View all varified restaurants by public
+router.use('/restaurants', require('./restaurants'));
+
 // Add, read, modify and delete tables by restaurant owner
 router.use('/table', require('./table'));
 

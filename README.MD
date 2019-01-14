@@ -218,3 +218,6 @@ each collection will have _id by default
 	POST - Add table(s) to their restaurant by RestaurantOwner
 	PUT - Update single table details
 	GET - List tables for particular restaurant
+
+/restaurants
+	GET - list all verfied restaurants for public view

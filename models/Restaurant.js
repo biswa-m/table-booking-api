@@ -59,6 +59,17 @@ RestaurantSchema.methods.setBusinessHours = function(data) {
 	});
 };
 
+RestaurantSchema.methods.viewByOwnerJSON = function() {
+	return {
+		id: this._id,
+		name: this.name,
+		address: this.address,
+		description: this.description,
+		businessHours: this.businessHours,
+		verified: this.verified
+	};
+};
+
 RestaurantSchema.methods.viewJSON = function() {
 	return {
 		id: this._id,

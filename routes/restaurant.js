@@ -28,7 +28,7 @@ router.post('/', auth.required, function(req, res, next) {
 		restaurant.setBusinessHours(req.body.restaurant.businessHours);
 
 		restaurant.save().then(function() {
-			return res.json({restaurant: restaurant.viewJSON()});
+			return res.json({restaurant: restaurant.viewByOwnerJSON()});
 		}).catch(next);
 	}).catch(next);
 });
@@ -44,7 +44,7 @@ router.get('/', auth.required, function(req, res, next) {
 		Restaurant.find({admin: req.user.id}).then(function(restaurants) {
 			var restauratnsDetails = [];
 			restaurants.forEach(function(restaurant) {
-				restauratnsDetails.push(restaurant.viewJSON());
+				restauratnsDetails.push(restaurant.viewByOwnerJSON());
 			});
 
 			return res.json({restaurants: restauratnsDetails});
@@ -83,7 +83,7 @@ router.put('/', auth.required, function(req, res, next) {
 				restaurant.setBusinessHours(data.businessHours);
 
 			restaurant.save().then(function() {
-				return res.json({restaurant: restaurant.viewJSON()});
+				return res.json({restaurant: restaurant.viewByOwnerJSON()});
 			}).catch(next);
 		}).catch(next);
 	}).catch(next);
