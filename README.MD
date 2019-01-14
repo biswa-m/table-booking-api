@@ -34,6 +34,7 @@ Default structure and valid keys to send JSON data on payload.
 			'password': ''
 		},
 		'restaurant': {
+			'id': '',
 			'name': '',
 			'address': '',
 			'businessHours': {
@@ -198,3 +199,6 @@ each collection will have _id by default
 /restaurant
 	POST - Create new restaurant by RestaurantOwner
 	GET - Get restaurants owned by the RestaurantOwner
+	PUT - Update restaurant details by RestaurantOwner
+
+	set business hours to {start: 0, end: 0} for closed day

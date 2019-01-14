@@ -48,7 +48,7 @@ RestaurantSchema.methods.setBusinessHours = function(data) {
 
 		if (!validateData.time(data[day].start)
 					|| !validateData.time(data[day].end)
-					|| data[day].start >= data[day].end) {
+					|| data[day].start > data[day].end) {
 			var err = new Error('Invalid business hours');
 			err.name = 'ValidationError';
 			throw err;

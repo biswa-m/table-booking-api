@@ -52,4 +52,43 @@ router.get('/', auth.required, function(req, res, next) {
 	}).catch(next);
 });
 
+/*
+ * Update restaurant details
+ * required data: Authentication token
+ * optional data: name, address, description, businessHours
+ */
+router.put('/', auth.required, function(req, res, next) {
+	RestaurantOwner.findById(req.user.id).then(function(restaurantOwner) {
+		if (!restaurantOwner) return res.sendStatus(401);
+
+		let data = req.body.restaurant;
+		if (!data || !(data.name || data.address || data.description || data.businessHours)){
+			return res.status(400).json({errors: 'Provide data to update'});
+		}
+
+		Restaurant.findOne({
+			admin: req.user.id,
+			_id: req.body.restaurant.id
+		}).then(function(restaurant) {
+			if (!restaurant) return res.sendStatus(401);
+
+			// Update fields that were passed
+			if (typeof data.name !== 'undefined')
+				restaurant.name = data.name;
+			if (typeof data.address !== 'undefined')
+				restaurant.address = data.address;
+			if (typeof data.description !== 'undefined')
+				restaurant.description = data.description;
+			if (typeof data.businessHours !== 'undefined')
+				restaurant.setBusinessHours(data.businessHours);
+
+			restaurant.save().then(function() {
+				return res.json({restaurant: restaurant.viewJSON()});
+			}).catch(next);
+		}).catch(next);
+	}).catch(next);
+});
+
+// TODO delete restaurant, manage the bookings and other associated data when deleted
+
 module.exports = router;
