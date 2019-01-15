@@ -64,14 +64,9 @@ var BookingSchema = new mongoose.Schema({
 	}
 }, {timestamps: true});
 
-BookingSchema.methods.setTime = function(from, to) {
-	this.bookingFrom = from;
-	this.bookingTo = to;
-};
-
 BookingSchema.methods.toUserJSON = function() {
 	return {
-		restaurant: this.restautant,
+		restaurant: this.restaurant,
 		tables: this.tables,
 		bookingFrom: this.bookingFrom,
 		bookingTo: this.bookingTo
@@ -80,7 +75,7 @@ BookingSchema.methods.toUserJSON = function() {
 
 BookingSchema.methods.toAuthUserJSON = function() {
 	var respond = {
-		restaurant: this.restautant,
+		restaurant: this.restaurant,
 		tables: this.tables,
 		noOfPersons: this.noOfPersons,
 		customer: this.customer,
@@ -90,10 +85,8 @@ BookingSchema.methods.toAuthUserJSON = function() {
 	};
 };
 
-
 var Booking = mongoose.model('Booking', BookingSchema);
 
+Booking.schema.path('bookingFrom').validate(bookingValidator.bookingTime, 'Invalid booking time!');
+
 module.exports = Booking;
-
-// TODO Validation for booking time
-

@@ -17,10 +17,12 @@ router.post('/', auth.required, function(req, res, next) {
 		booking.restaurant = req.body.booking.restaurant;
 		booking.tables = req.body.booking.tables;
 		booking.noOfPersons = req.body.booking.noOfPersons;
-		booking.setTime(req.body.booking.bookingFrom, req.body.booking.bookingTo);
+		booking.bookingFrom = req.body.booking.bookingFrom;
+		booking.bookingTo = req.body.booking.bookingTo;
 
 		booking.save().then(function() {
-			return res.json({booking: booking});
+			console.log('Database Updated');
+			return res.json({booking: booking.toUserJSON});
 		}).catch(next);
 	}).catch(next);
 });

@@ -1,6 +1,7 @@
 var mongoose = require('mongoose');
 
-var validateData = require('../helpers/validateData');
+var helpers = require('../helpers/utility');
+var throwError = require('../helpers/throwError');
 
 var ObjectId = mongoose.Schema.Types.ObjectId;
 
@@ -46,12 +47,10 @@ RestaurantSchema.methods.setBusinessHours = function(data) {
 	days.forEach(function(day) {
 		if (!data[day]) return;
 
-		if (!validateData.time(data[day].start)
-					|| !validateData.time(data[day].end)
+		if (!helpers.time.validate(data[day].start)
+					|| !helpers.time.validate(data[day].end)
 					|| data[day].start > data[day].end) {
-			var err = new Error('Invalid business hours');
-			err.name = 'ValidationError';
-			throw err;
+			throwError.validationError('Invalid business hours');
 		}
 
 		businessHours[day].start = data[day].start;
