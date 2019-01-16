@@ -53,27 +53,17 @@ bookingValidator.restaurant =  function(value, respond) {
 	});
 };
 
-bookingValidator.bookingTime = function() {
-	var data = this;
-	return new Promise(async function(resolve, reject) {
-		// should be greater then current time - possible processing time offset
-		// maximum booking period 24 hr = 86400000 mSec
-		// minimum booking period 0.5 hr = 1800000 mSec
-		if (
-			data.bookingFrom.getTime() < (Date.now() - 60000) // offset = 1 min
-			|| data.bookingTo.getTime() < data.bookingFrom.getTime() + 1800000
-			|| data.bookingTo.getTime() > data.bookingFrom.getTime() + 86400000
-		) resolve(false);
+bookingValidator.bookingTime = function(data) {
+	// should be greater then current time - possible processing time offset
+	// maximum booking period 24 hr = 86400000 mSec
+	// minimum booking period 0.5 hr = 1800000 mSec
+	if (
+		data.bookingFrom.getTime() < (Date.now() - 60000) // offset = 1 min
+		|| data.bookingTo.getTime() < data.bookingFrom.getTime() + 1800000
+		|| data.bookingTo.getTime() > data.bookingFrom.getTime() + 86400000
+	) return false;
 
-		console.log('Bookings times are well formated');
-
-		if (!(await bookingValidator.businessHours(data))) {
-			console.log('Restaurant will be closed');
-			resolve(false, 'Restaurant will be closed');
-		};
-
-		resolve(true);
-	});
+	return true;
 };
 
 bookingValidator.businessHours = function(data) {
@@ -119,6 +109,44 @@ bookingValidator.businessHours = function(data) {
 			resolve(true);
 		}).catch(function(err) {
 			console.log('Catched Error: ', err);
+			resolve(false);
+		});
+	});
+};
+
+bookingValidator.availability = function(Booking, data) {
+	return new Promise(function(resolve, reject) {
+		/*
+		 * These following condition means table not availabe
+		 * 1. requested bookingFrom == existing bookingFrom
+		 * 2. requested bookingTo == existing bookingTo
+		 * 3. requested bookingTo > existing bookingFrom
+		 * && requested bookingFrom < existing bookingTo
+		 */
+		Booking.find()
+		.or([
+			{'bookingFrom': data.bookingFrom },
+			{'bookingTo': data.bookingTo},
+			{
+				'bookingFrom': {$lt: data.bookingTo},
+				'bookingTo': {$gt: data.bookingFrom}
+			}
+		]).then(function(bookings) {
+			console.log('Reservation coincide with: ', bookings.length);
+			if (bookings.length) {
+				// check if these bookings are for the same tables
+				bookings.forEach(function(booking) {
+					data.tables.forEach(function(table) {
+						if (booking.tables.indexOf(table) !== -1) {
+							console.log(booking);
+							resolve(false);
+						};
+					});
+				});
+			}
+			resolve(true);
+		}).catch(function(err) {
+			console.log(err);
 			resolve(false);
 		});
 	});

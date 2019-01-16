@@ -66,6 +66,7 @@ var BookingSchema = new mongoose.Schema({
 
 BookingSchema.methods.toUserJSON = function() {
 	return {
+		id: this._id,
 		restaurant: this.restaurant,
 		tables: this.tables,
 		bookingFrom: this.bookingFrom,
@@ -75,6 +76,7 @@ BookingSchema.methods.toUserJSON = function() {
 
 BookingSchema.methods.toAuthUserJSON = function() {
 	var respond = {
+		id: this._id,
 		restaurant: this.restaurant,
 		tables: this.tables,
 		noOfPersons: this.noOfPersons,
@@ -87,6 +89,34 @@ BookingSchema.methods.toAuthUserJSON = function() {
 
 var Booking = mongoose.model('Booking', BookingSchema);
 
-Booking.schema.path('bookingFrom').validate(bookingValidator.bookingTime, 'Invalid booking time!');
+validateBookingTime = function() {
+	var data = this;
+	return new Promise(async function(resolve, reject) {
+		if (!(bookingValidator.bookingTime(data))) {
+			console.log('Invalid booking time');
+			resolve(false);
+		};
+
+		if (!(await bookingValidator.businessHours(data))) {
+			console.log('Restaurant will be closed');
+			resolve(false, 'Restaurant will be closed');
+		} else {
+			console.log('Restarant will be open');
+		};
+
+		// TODO in V2.0 restaurant specific custom closing dates/ hours
+
+		if (!(await bookingValidator.availability(Booking, data))) {
+			console.log('Table not available');
+			resolve(false, 'Table not available');
+		} else {
+			console.log('table(s) are available');
+		};
+
+		resolve(true);
+	});
+};
+
+Booking.schema.path('bookingFrom').validate(validateBookingTime, 'Invalid booking time!');
 
 module.exports = Booking;

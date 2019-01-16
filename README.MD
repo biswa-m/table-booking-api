@@ -66,8 +66,8 @@ Default structure and valid keys to send JSON data on payload.
 			'restaurant': ObjectId,
 			'tables': [ObjectId],
 			'noOfPersons': Integer,
-			'bookingFrom': Date.getTime, (Integer)
-			'bookingTo': Date.getTime, (Integer)
+			'bookingFrom': Date
+			'bookingTo': Date
 			'customer': ObjectId,
 		}
 	}

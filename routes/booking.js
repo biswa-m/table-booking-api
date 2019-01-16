@@ -22,7 +22,7 @@ router.post('/', auth.required, function(req, res, next) {
 
 		booking.save().then(function() {
 			console.log('Database Updated');
-			return res.json({booking: booking.toUserJSON});
+			return res.json({booking: booking.toUserJSON()});
 		}).catch(next);
 	}).catch(next);
 });
