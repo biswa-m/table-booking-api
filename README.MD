@@ -144,7 +144,7 @@ each collection will have _id by default
 #### /user/login
 -	POST - validate customer login and return jwt token
 	-	Permission - self
--	/user/restaurant/login
+#### /user/restaurant/login
 	POST - validate RestaurantOwner login and return jwt token
 	-	Permission - self
 #### /restaurant
