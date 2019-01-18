@@ -152,10 +152,9 @@ each collection will have _id by default
 -	PUT - Update restaurant details by RestaurantOwner
 -	GET - Get restaurants owned by the RestaurantOwner
 -	DELETE - Delete restaurant owned by RestaurantOwner
-
-#### /restaurant/:restaurantId/:phone //TODO
-#### /restaurant/:restaurantId/bookings?phone&sortBy&startDate&endDate&startTime&endTime&pageNo&customerId&customerEmail&bookingStatus //TODO
-
+#### /restaurant/:restaurantId/bookings
+	-	optional data on query string
+		-	phone, sortBy, startDate, endDate, startTime, endTime, pageNo, customerId, customerEmail, bookingStatus //TODO
 #### /table
 -	POST - Add table(s) to their restaurant by RestaurantOwner
 	-	example request:
@@ -179,7 +178,6 @@ each collection will have _id by default
 -	PUT - Update single table details
 
 -	GET - List tables for particular restaurant
-
 #### /restaurants
 -	GET - list all verfied restaurants for public view
 
@@ -192,8 +190,6 @@ in version 2, we can add filter by avalibility during datetime
 -	DELETE - Delete a book
 	-	Permission - Customer, RestaurantOwner
 
-#### /booking/:bookinId
--	permission- customer //TODO
 
 ## Impleted API routes
 
@@ -204,8 +200,6 @@ in version 2, we can add filter by avalibility during datetime
 	-	Permission - self
 -	GET - get customer data.
 	-	Permission - self
-#### /user/:phone
--	Get - customer by restaurantOwner
 
 #### /user/login
 - POST - validate customer login and return jwt token
@@ -219,6 +213,9 @@ in version 2, we can add filter by avalibility during datetime
 -	POST - Create new restaurant by RestaurantOwner
 -	GET - Get restaurants owned by the RestaurantOwner
 -	PUT - Update restaurant details by RestaurantOwner
+
+#### /restaurant/:restaurantId/:phone 
+-	permission- customer //TODO
 
 set business hours to {start: 0, end: 0} for closed day
 
@@ -236,7 +233,3 @@ set business hours to {start: 0, end: 0} for closed day
 -	Get - Get all the bookings by user Id
 	-	permission Customer
 
-
-// TODO
-unique phone no
-routes
