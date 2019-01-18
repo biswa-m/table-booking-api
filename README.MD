@@ -61,7 +61,6 @@ Default structure and valid keys to send JSON data on payload.
 			'capacity': '',
 			'description': ''
 		},
-
 		'booking': {
 			'restaurant': ObjectId,
 			'tables': [ObjectId],
@@ -79,93 +78,90 @@ Send authorization token in headers
 
 ## Database Schema
 
-RestaurantOwner: {
-	firstName: String,
-	lastName: String,
-	email: String,
-	phone: String,
-	password: String,
-	resturants: [resturant ObjectId] 
-}
-
-Customer: {
-	email: String,
-	password: String,
-	name: String,
-	phone: String
-}
-
-Restaurant: {
-	name: String,
-	Address: String,
-	description: String,
-	admin: [RestaurantOwner ObjectId]
-	verified: Boolean
-	businessHours: {
-		Sunday: {
-			start: Time,
-			end: Time
-		},
-		Monday: {
-			start: Time,
-			end: Time
-		},
-		...
-		...
+	RestaurantOwner: {
+		firstName: String,
+		lastName: String,
+		email: String,
+		phone: String,
+		password: String,
+		resturants: [resturant ObjectId] 
 	}
-}
-
-Table: {
-	restaurant: ObjectId,
-	tableIdentifier: String,	// eg Table No 12
-	capacity: Number,
-	description: String
-}
-
-Booking: {
-	restaurant: ObjectId,
-	tables: [table ObjectId],
-	noOfPersons: Integer,
-	bookingFrom: DateTime,
-	bookingTo: DateTime,
-	customer: Customer ObjectId,
-	bookingStatus: pending/confirmed/canceled
-	bookingStatusUpdatedBy: customer/RestaurantOwner
-}
+	Customer: {
+		email: String,
+		password: String,
+		name: String,
+		phone: String
+	}
+	Restaurant: {
+		name: String,
+		Address: String,
+		description: String,
+		admin: [RestaurantOwner ObjectId]
+		verified: Boolean
+		businessHours: {
+			Sunday: {
+				start: Time,
+				end: Time
+			},
+			Monday: {
+				start: Time,
+				end: Time
+			},
+			...
+			...
+		}
+	}
+	Table: {
+		restaurant: ObjectId,
+		tableIdentifier: String,	// eg Table No 12
+		capacity: Number,
+		description: String
+	}
+	Booking: {
+		restaurant: ObjectId,
+		tables: [table ObjectId],
+		noOfPersons: Integer,
+		bookingFrom: DateTime,
+		bookingTo: DateTime,
+		customer: Customer ObjectId,
+		bookingStatus: pending/confirmed/canceled
+		bookingStatusUpdatedBy: customer/RestaurantOwner
+	}
 
 each collection will have _id by default
 
 
 ## Proposed API routes
 
-/user
-	POST - create customer account
-		Permission - self
-	PUT - update customer details.
-		Permission - self
-	GET - get customer data.
-		Permission - self, restaurantOwner if user has booking in his/her restaurant
+#### /user
+-	POST - create customer account
+	-	Permission - self
+-	PUT - update customer details.
+	-	Permission - self
+-	GET - get customer data.
+	-	Permission - self
 
-		params: phone, eg: GET /user/9876543210
-
-/user/login
-	POST - validate customer login and return jwt token
-		Permission - self
-
-/user/restaurant/login
+#### /user/login
+-	POST - validate customer login and return jwt token
+	-	Permission - self
+-	/user/restaurant/login
 	POST - validate RestaurantOwner login and return jwt token
-		Permission - self
+	-	Permission - self
+#### /restaurant
+-	POST - Create new restaurant by RestaurantOwner
+-	PUT - Update restaurant details by RestaurantOwner
+-	GET - Get restaurants owned by the RestaurantOwner
+-	DELETE - Delete restaurant owned by RestaurantOwner
 
-/restaurant
-	POST - Create new restaurant by RestaurantOwner
-	PUT - Update restaurant details by RestaurantOwner
-	GET - Get restaurants owned by the RestaurantOwner
-	DELETE - Delete restaurant owned by RestaurantOwner
+#### /restaurant/:restaurantId/:phone //TODO
+#### /restaurant/:restaurantId/bookings?phone&sortBy&startDate&endDate&startTime&endTime&pageNo&customerId&customerEmail&bookingStatus //TODO
 
-/table
-	POST - Add table(s) to their restaurant by RestaurantOwner
-	example request:
-		POST /table
+#### /table
+-	POST - Add table(s) to their restaurant by RestaurantOwner
+	-	example request:
+		
+        
+        POST /table
 		BODY: {
 			restauranId: 23847hjhd7q3472341,
 			tables: [
@@ -180,57 +176,67 @@ each collection will have _id by default
 			]
 		}
 
-	PUT - Update single table details
+-	PUT - Update single table details
 
-	GET - List tables for particular restaurant
+-	GET - List tables for particular restaurant
 
-/restaurants
-	GET - list all verfied restaurants for public view
+#### /restaurants
+-	GET - list all verfied restaurants for public view
 
-	in version 2, we can add filter by avalibility during datetime
+in version 2, we can add filter by avalibility during datetime
 
-/booking
-	POST - Create booking in case its available
-		return bookingId
+#### /booking
+-	POST - Create booking in case its available
+	-	return bookingId
+	-	Permission - Customer, RestaurantOwner
+-	DELETE - Delete a book
+	-	Permission - Customer, RestaurantOwner
 
-	Permission - Customer, RestaurantOwner
-
-	DELETE - Delete a book
-	Permission - Customer, RestaurantOwner
+#### /booking/:bookinId
+-	permission- customer //TODO
 
 ## Impleted API routes
 
-/user
-	POST - create customer account
-		Permission - self
-	PUT - update customer details.
-		Permission - self
-	GET - get customer data.
-		Permission - self
+#### /user
+-	POST - create customer account
+	-	Permission - self
+-	PUT - update customer details.
+	-	Permission - self
+-	GET - get customer data.
+	-	Permission - self
+#### /user/:phone
+-	Get - customer by restaurantOwner
 
-/user/login
-	POST - validate customer login and return jwt token
-		Permission - self
+#### /user/login
+- POST - validate customer login and return jwt token
+	-	Permission - self
 
-/user/restaurant/login
-	POST - validate RestaurantOwner login and return jwt token
-		Permission - self
+#### /user/restaurant/login
+-	POST - validate RestaurantOwner login and return jwt token
+	-	Permission - self
 
-/restaurant
-	POST - Create new restaurant by RestaurantOwner
-	GET - Get restaurants owned by the RestaurantOwner
-	PUT - Update restaurant details by RestaurantOwner
+#### /restaurant
+-	POST - Create new restaurant by RestaurantOwner
+-	GET - Get restaurants owned by the RestaurantOwner
+-	PUT - Update restaurant details by RestaurantOwner
 
-	set business hours to {start: 0, end: 0} for closed day
+set business hours to {start: 0, end: 0} for closed day
 
-/table
-	POST - Add table(s) to their restaurant by RestaurantOwner
-	PUT - Update single table details
-	GET - List tables for particular restaurant
+#### /table
+-	POST - Add table(s) to their restaurant by RestaurantOwner
+-	PUT - Update single table details
+-	GET - List tables for particular restaurant
 
-/restaurants
-	GET - list all verfied restaurants for public view
+#### /restaurants
+-	GET - list all verfied restaurants for public view
 
-/booking
-	POST - Create booking in case its available
-		return bookingId
+#### /booking
+-	POST - Create booking in case its available
+	-	return bookingId
+-	Get - Get all the bookings by user Id
+	-	permission Customer
+
+
+// TODO
+unique phone no
+routes
