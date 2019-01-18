@@ -51,4 +51,28 @@ router.get('/', auth.required, function(req, res, next) {
 	}).catch(next);
 });
 
+/*
+ * Get booking of the logged-in customer by bookingId
+ * Required data: Authentication token
+ */
+router.get('/:bookingId', auth.required, function(req, res, next) {
+	// if regEx of params do not match procceed to next function
+	var regExObjectId = /^[a-f\d]{24}$/i;
+	if (!regExObjectId.test(req.params.bookingId)) return next();
+
+	Customer.findById(req.user.id).then(function(customer) {
+		if (!customer) return res.sendStatus(401);
+
+		// Get booking data of the customer
+		Booking.findById({
+			_id: req.params.bookingId,
+			customer: req.user.id
+		}).then(function(booking) {
+			if (!booking) return res.sendStatus(401);
+
+			res.json({booking: booking.toUserJSON()});
+		}).catch(next);
+	}).catch(next);
+});
+
 module.exports = router;

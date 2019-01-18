@@ -140,7 +140,6 @@ each collection will have _id by default
 	-	Permission - self
 -	GET - get customer data.
 	-	Permission - self
-
 #### /user/login
 -	POST - validate customer login and return jwt token
 	-	Permission - self
@@ -152,7 +151,10 @@ each collection will have _id by default
 -	PUT - Update restaurant details by RestaurantOwner
 -	GET - Get restaurants owned by the RestaurantOwner
 -	DELETE - Delete restaurant owned by RestaurantOwner
+#### /restaurant/:restaurantId/:phone
+-	GET - customer details by phone no, if customer has bookings with restaurantOwner
 #### /restaurant/:restaurantId/bookings
+-	GET - bookings of a restaturant
 	-	optional data on query string
 		-	phone, sortBy, startDate, endDate, startTime, endTime, pageNo, customerId, customerEmail, bookingStatus //TODO
 #### /table
@@ -182,14 +184,14 @@ each collection will have _id by default
 -	GET - list all verfied restaurants for public view
 
 in version 2, we can add filter by avalibility during datetime
-
 #### /booking
 -	POST - Create booking in case its available
 	-	return bookingId
 	-	Permission - Customer, RestaurantOwner
 -	DELETE - Delete a book
 	-	Permission - Customer, RestaurantOwner
-
+#### /booking/:bookinId
+-	permission- customer TODO
 
 ## Impleted API routes
 
@@ -200,36 +202,30 @@ in version 2, we can add filter by avalibility during datetime
 	-	Permission - self
 -	GET - get customer data.
 	-	Permission - self
-
 #### /user/login
 - POST - validate customer login and return jwt token
 	-	Permission - self
-
 #### /user/restaurant/login
 -	POST - validate RestaurantOwner login and return jwt token
 	-	Permission - self
-
 #### /restaurant
 -	POST - Create new restaurant by RestaurantOwner
 -	GET - Get restaurants owned by the RestaurantOwner
 -	PUT - Update restaurant details by RestaurantOwner
 
-#### /restaurant/:restaurantId/:phone 
--	permission- customer //TODO
-
 set business hours to {start: 0, end: 0} for closed day
-
+#### /restaurant/:restaurantId/:phone
+-	GET - customer details by phone no, if customer has bookings with restaurantOwner
+#### /restaurants
+-	GET - list all verfied restaurants for public view
 #### /table
 -	POST - Add table(s) to their restaurant by RestaurantOwner
 -	PUT - Update single table details
 -	GET - List tables for particular restaurant
-
-#### /restaurants
--	GET - list all verfied restaurants for public view
-
 #### /booking
 -	POST - Create booking in case its available
 	-	return bookingId
 -	Get - Get all the bookings by user Id
 	-	permission Customer
-
+#### /booking/:bookinId
+-	permission- customer, self

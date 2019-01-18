@@ -99,7 +99,7 @@ router.put('/', auth.required, function(req, res, next) {
  * required data: Authentication token
  */
 router.get('/:restaurantId/:phone', auth.required, function(req, res, next) {
-	// if regEx of params does not matches procceed to next function
+	// if regEx of params do not match procceed to next function
 	var regExObjectId = /^[a-f\d]{24}$/i;
 	if (!regExObjectId.test(req.params.restaurantId)) return next();
 
