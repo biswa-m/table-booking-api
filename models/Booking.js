@@ -75,7 +75,7 @@ BookingSchema.methods.toUserJSON = function() {
 };
 
 BookingSchema.methods.toAuthUserJSON = function() {
-	var respond = {
+	return {
 		id: this._id,
 		restaurant: this.restaurant,
 		tables: this.tables,

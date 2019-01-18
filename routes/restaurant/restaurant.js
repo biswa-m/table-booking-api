@@ -1,12 +1,9 @@
 var mongoose = require('mongoose');
 var router = require('express').Router();
 
-var auth = require('../helpers/auth');
-var throwError = require('../helpers/throwError');
+var auth = require('../../helpers/auth');
 
 var Restaurant = mongoose.model('Restaurant');
-var Customer = mongoose.model('Customer');
-var Booking = mongoose.model('Booking');
 var RestaurantOwner = mongoose.model('RestaurantOwner');
 
 // TODO in V2.0 assign other admins by restaurant owner and manage permissions
@@ -93,86 +90,5 @@ router.put('/', auth.required, function(req, res, next) {
 });
 
 // TODO delete restaurant, manage the bookings and other associated data when deleted
-
-/*
- * Read customer data by phone no
- * permission: restaurant owner, if the customer(s) have booking in his/her restaurant(s)
- * required data: Authentication token
- */
-router.get('/:restaurantId/:phone', auth.required, function(req, res, next) {
-	// if regEx of params do not match procceed to next function
-	var regExObjectId = /^[a-f\d]{24}$/i;
-	if (!regExObjectId.test(req.params.restaurantId)) return next();
-
-	var regExPhone = /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/im;
-	if (!regExPhone.test(req.params.phone)) return next();
-
-	// Authorize if user is the admin of the restaurant
-	Restaurant.findOne({
-		_id: req.params.restaurantId,
-		admin: req.user.id
-	}).then(function(restaurant) {
-		if (!restaurant) return res.sendStatus(401);
-
-		// Find customer using phone no provided
-		Customer.findOne({phone: req.params.phone}).then(function(customer) {
-			if (!customer) return res.sendStatus(401);
-
-			// Authorize only if the customer has booking in that restaurant
-			Booking.find({
-				restaurant: req.params.restaurantId,
-				customer: customer._id
-			}).then(function(bookings) {
-				if (!bookings.length) return res.sendStatus(401);
-
-				return res.json({customer: customer.getUserJSON()})
-			}).catch(next);
-		}).catch(next);
-	}).catch(next);
-});
-
-/* Get bookings of a restaurant
- * permission - restaurant owner
- * required data - Authentication token
- * optional data on query string - phone, email, customerId, bookingStatus
- * TODO - sortBy, startDate, endDate, startTime, endTime, pageNo
- */
-router.get('/:restaurantId/bookings', auth.required, function(req, res, next) {
-	// if regEx of params do not match procceed to next function
-	var regExObjectId = /^[a-f\d]{24}$/i;
-	if (!regExObjectId.test(req.params.restaurantId)) return next();
-
-	// Authorize if user is the admin of the restaurant
-	Restaurant.findOne({
-		_id: req.params.restaurantId,
-		admin: req.user.id
-	}).then(async function(restaurant) {
-		if (!restaurant) throwError.unauthorized();
-
-		var query = {};
-
-		// Check optional parameters to apply search filter
-
-		if (req.query.customerId) {
-			query.customer = req.query.customerId;
-		} else if (req.query.phone || req.query.email) {
-			let customerQuery = {};
-
-			if (req.query.phone) customerQuery.phone = req.query.phone;
-			if (req.query.email) customerQuery.email = req.query.email;
-
-			await Customer.findOne(customerQuery).then(function(customer) {
-				if (!customer) query.customer = null;
-				else query.customer = customer._id;
-			}).catch(next);
-		}
-		if (req.query.bookingStatus)
-			query.bookingStatus = req.query.bookingStatus;
-
-		Booking.find(query).then(function(bookings) {
-			res.json({bookings: bookings});
-		}).catch(next);
-	}).catch(next);
-});
 
 module.exports = router;

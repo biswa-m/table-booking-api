@@ -7,8 +7,8 @@ router.get('/ping', function(req, res, next){
 // user signup, login, view user data, modify user data
 router.use('/user', require('./user'));
 
-// Create, update, read and delete restaurant by restaurant owner
-router.use('/restaurant', require('./restaurant'));
+// Restaurant releted operations 
+router.use('/restaurant', require('./restaurant/'));
 
 // View all varified restaurants by public
 router.use('/restaurants', require('./restaurants'));

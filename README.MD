@@ -157,6 +157,10 @@ each collection will have _id by default
 -	GET - bookings of a restaturant
 	-	optional data on query string
 		-	phone, sortBy, startDate, endDate, startTime, endTime, pageNo, customerId, customerEmail, bookingStatus //TODO
+#### /restaurant/booking/:restaurantId/:bookingId
+-	POST - create booking
+-	GET	- get booking
+-	PUT - update booking
 #### /table
 -	POST - Add table(s) to their restaurant by RestaurantOwner
 	-	example request:
@@ -216,10 +220,13 @@ in version 2, we can add filter by avalibility during datetime
 set business hours to {start: 0, end: 0} for closed day
 #### /restaurant/:restaurantId/:phone
 -	GET - customer details by phone no, if customer has bookings with restaurantOwner
-#### /restaurant/:restaurantId/bookings
+#### /restaurant/bookings/:restaurantId
 -	GET - bookings of a restaturant
 	-	optional data on query string
 		-	phone, customerId, email, bookingStatus
+#### /restaurant/booking/:restaurantId/:bookingId
+-	GET - get booking of a restaurant by bookingId
+
 #### /restaurants
 -	GET - list all verfied restaurants for public view
 #### /table
