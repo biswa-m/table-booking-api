@@ -227,6 +227,10 @@ set business hours to {start: 0, end: 0} for closed day
 #### /restaurant/booking/:restaurantId/:bookingId
 -	GET - get booking of a restaurant by bookingId
 
+#### /restaurant/booking/:restaurantId/:bookingId/status
+-	PUT - Change bookingStatus
+	-	Confirm / Cancel a booking
+
 #### /restaurants
 -	GET - list all verfied restaurants for public view
 #### /table

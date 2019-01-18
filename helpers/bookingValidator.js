@@ -133,6 +133,14 @@ bookingValidator.availability = function(Booking, data) {
 			}
 		]).then(function(bookings) {
 			console.log('Reservation coincide with: ', bookings.length);
+
+			// Incase of document which is being updated
+			if (
+				(bookings.length === 1)
+				&& JSON.stringify(bookings[0]._id) === JSON.stringify(data._id)
+			)
+				resolve(true);
+
 			if (bookings.length) {
 				// check if these bookings are for the same tables
 				bookings.forEach(function(booking) {
