@@ -191,7 +191,7 @@ in version 2, we can add filter by avalibility during datetime
 -	DELETE - Delete a book
 	-	Permission - Customer, RestaurantOwner
 #### /booking/:bookinId
--	permission- customer TODO
+-	permission- customer
 
 ## Impleted API routes
 
@@ -216,6 +216,10 @@ in version 2, we can add filter by avalibility during datetime
 set business hours to {start: 0, end: 0} for closed day
 #### /restaurant/:restaurantId/:phone
 -	GET - customer details by phone no, if customer has bookings with restaurantOwner
+#### /restaurant/:restaurantId/bookings
+-	GET - bookings of a restaturant
+	-	optional data on query string
+		-	phone, customerId, email, bookingStatus
 #### /restaurants
 -	GET - list all verfied restaurants for public view
 #### /table

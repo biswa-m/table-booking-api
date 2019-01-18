@@ -44,7 +44,7 @@ if (config.envName === 'staging') {
 	app.use(function(err, req, res, next) {
 		console.log(err.stack);
 
-		res.status(err.status || (err.name == 'ValidationError') ? 400 : 500);
+		res.status(err.status || ((err.name == 'ValidationError') ? 400 : 500));
 		res.json({
 			'errors': {
 				message: err.message,
