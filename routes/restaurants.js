@@ -8,7 +8,11 @@ var Restaurant = mongoose.model('Restaurant');
  */
 // TODO add filter by availibilty during date time
 router.get('/', function(req, res, next) {
-	Restaurant.find({verified: true}).then(function(restaurants) {
+	var query = {verified: true};
+
+	if (req.query.restaurantid) query._id = req.query.restaurantid;
+
+	Restaurant.find(query).then(function(restaurants) {
 		let list = []
 
 		restaurants.forEach(function(restaurant) {

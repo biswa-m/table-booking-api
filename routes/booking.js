@@ -24,7 +24,8 @@ router.post('/', auth.required, function(req, res, next) {
 		booking.tables = req.body.booking.tables;
 		booking.noOfPersons = req.body.booking.noOfPersons;
 		booking.bookingFrom = req.body.booking.bookingFrom;
-		booking.bookingTo = req.body.booking.bookingTo; booking.save().then(function() {
+		booking.bookingTo = req.body.booking.bookingTo;
+		booking.save().then(function() {
 			console.log('Database Updated');
 			return res.json({booking: booking.toUserJSON()});
 		}).catch(next);
