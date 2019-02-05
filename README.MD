@@ -71,7 +71,6 @@ Default structure and valid keys to send JSON data on payload.
 			'tables': [ObjectId],
 			'noOfPersons': Integer,
 			'bookingFrom': Date
-			'bookingTo': Date
 			'customer': ObjectId,
 		}
 	}
@@ -127,7 +126,6 @@ Send authorization token in headers
 		tables: [table ObjectId],
 		noOfPersons: Integer,
 		bookingFrom: DateTime,
-		bookingTo: DateTime,
 		customer: Customer ObjectId,
 		bookingStatus: pending/confirmed/canceled
 		bookingStatusUpdatedBy: customer/RestaurantOwner
@@ -135,74 +133,7 @@ Send authorization token in headers
 
 each collection will have _id by default
 
-
-## Proposed API routes
-
-#### /user
--	POST - create customer account
-	-	Permission - self
--	PUT - update customer details.
-	-	Permission - self
--	GET - get customer data.
-	-	Permission - self
-#### /user/login
--	POST - validate customer login and return jwt token
-	-	Permission - self
-#### /user/restaurant/login
-	POST - validate RestaurantOwner login and return jwt token
-	-	Permission - self
-#### /restaurant
--	POST - Create new restaurant by RestaurantOwner
--	PUT - Update restaurant details by RestaurantOwner
--	GET - Get restaurants owned by the RestaurantOwner
--	DELETE - Delete restaurant owned by RestaurantOwner
-#### /restaurant/:restaurantId/:phone
--	GET - customer details by phone no, if customer has bookings with restaurantOwner
-#### /restaurant/:restaurantId/bookings
--	GET - bookings of a restaturant
-	-	optional data on query string
-		-	phone, sortBy, startDate, endDate, startTime, endTime, pageNo, customerId, customerEmail, bookingStatus //TODO
-#### /restaurant/booking/:restaurantId/:bookingId
--	POST - create booking
--	GET	- get booking
--	PUT - update booking
-#### /table
--	POST - Add table(s) to their restaurant by RestaurantOwner
-	-	example request:
-		
-        
-        POST /table
-		BODY: {
-			restauranId: 23847hjhd7q3472341,
-			tables: [
-				{
-					tableIdentifier: 1,
-					capacity: 4
-				},
-				{
-					tableIdentifier: 2,
-					capacity: 2
-				}
-			]
-		}
-
--	PUT - Update single table details
-
--	GET - List tables for particular restaurant
-#### /restaurants
--	GET - list all verfied restaurants for public view
-
-in version 2, we can add filter by avalibility during datetime
-#### /booking
--	POST - Create booking in case its available
-	-	return bookingId
-	-	Permission - Customer, RestaurantOwner
--	DELETE - Delete a book
-	-	Permission - Customer, RestaurantOwner
-#### /booking/:bookinId
--	permission- customer
-
-## Impleted API routes
+## Implemented API routes
 
 #### /user
 -	POST - create customer account
@@ -249,3 +180,23 @@ set business hours to {start: 0, end: 0} for closed day
 	-	permission Customer
 #### /booking/:bookinId
 -	permission- customer, self
+
+## API routes to be implemented
+
+#### /restaurant
+-	DELETE - Delete restaurant owned by RestaurantOwner
+#### /restaurant/bookings/:restaurantId
+-	GET - bookings of a restaturant
+	-	optional data on query string
+		-	phone, sortBy, startDate, endDate, startTime, endTime, pageNo, customerId, customerEmail, bookingStatus //TODO
+#### /restaurant/booking/:restaurantId/:bookingId
+-	POST - create booking
+-	PUT - update booking
+#### /restaurants
+-	GET - list all verfied restaurants for public view
+add filter by avalibility during datetime
+#### /booking
+-	DELETE - Delete a book
+	-	Permission - Customer, RestaurantOwner
+
+

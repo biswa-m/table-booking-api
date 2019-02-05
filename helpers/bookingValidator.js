@@ -10,151 +10,35 @@ var getTime = helpers.time.get;
 // Instantiate object to export
 var bookingValidator = {};
 
-// Function to validate no of persons during schema building
-bookingValidator.noOfPersons = function(value, respond) {
-	if (!value) respond(false, 'There must be atleast one person');
-
-	var tableIds = this.tables;
-	var restaurant = this.restaurant;
-
-	// Go through each table of tables array
-	Table.find({'_id': {$in: this.tables}})
-	.then(function(tables) {
-		// check provided table ids are valid
-		if (tables.length !== tableIds.length)
-			respond(false, 'validation fail, invalid table');
-
-		// Iterate throgh table array to calculate total capacity
-		var totalCapacity = 0;
-		tables.forEach(function(table) {
-			if (JSON.stringify(restaurant) !== JSON.stringify(table.restaurant))
-				respond(false, 'validation fail, invalid table or restaurant');
-
-			totalCapacity += table.capacity;
-		});
-		if (value > totalCapacity) respond(false);
-
-		respond(true);
-	}).catch(function(err){
-		console.log(err);
-		respond(false, 'validation fail');
-	});
-};
-
-// function to validate restaurat during schema building
-bookingValidator.restaurant =  function(value, respond) {
-	Restaurant.findById(value).then(function(restaurant) {
-		if (!restaurant) respond(false);
-
-		respond(true);
-	}).catch(function(err){
-		console.log(err);
-		respond(false);
-	});
-};
-
-bookingValidator.bookingTime = function(data) {
-	// should be greater then current time - possible processing time offset
-	// maximum booking period 24 hr = 86400000 mSec
-	// minimum booking period 0.5 hr = 1800000 mSec
-	if (
-		data.bookingFrom.getTime() < (Date.now() - 60000) // offset = 1 min
-		|| data.bookingTo.getTime() < data.bookingFrom.getTime() + 1800000
-		|| data.bookingTo.getTime() > data.bookingFrom.getTime() + 86400000
-	) return false;
-
-	return true;
-};
-
 bookingValidator.businessHours = function(data) {
-	var dayFrom = getDay(data.bookingFrom);
-	var dayTo = getDay(data.bookingTo);
+	var bookingDay = getDay(data.bookingFrom);
+
 
 	return new Promise(function(resolve, reject) {
-		// Check businessHoures of the restaurant
+		// Check businessHours of the restaurant
 		Restaurant.findById(data.restaurant).then(function(restaurant) {
 
-			console.log(!restaurant);
-			console.log(typeof(restaurant.businessHours[dayFrom].start)
-				=== 'undefined');
-			console.log(typeof(restaurant.businessHours[dayFrom].end)
-				=== 'undefined');
-			console.log(restaurant.businessHours[dayFrom].start
-				> getTime(data.bookingFrom));
-			console.log(restaurant.businessHours[dayTo].end
-				< getTime(data.bookingTo));
-			console.log(
-				(dayFrom != dayTo) // midnight booking
-				&& (restaurant.businessHours[dayFrom].end != 2400)
-				&& (restaurant.businessHours[dayTo].end != 0000)
-			);
+			console.log('Business hours for the day: ', restaurant.businessHours[bookingDay], '\nBooking requested at: ', getTime(data.bookingFrom));
+			console.log('Too early to book: ', restaurant.businessHours[bookingDay].start
+						> getTime(data.bookingFrom));
+			console.log('Too late to book: ', restaurant.businessHours[bookingDay].end
+						< getTime(data.bookingFrom));
 
 			if (
 				!restaurant
-				|| typeof(restaurant.businessHours[dayFrom].start)
+				|| typeof(restaurant.businessHours[bookingDay].start)
 						=== 'undefined'
-				|| typeof(restaurant.businessHours[dayFrom].end)
+				|| typeof(restaurant.businessHours[bookingDay].end)
 						=== 'undefined'
-				|| restaurant.businessHours[dayFrom].start
+				|| restaurant.businessHours[bookingDay].start
 						> getTime(data.bookingFrom)
-				|| restaurant.businessHours[dayTo].end
-						< getTime(data.bookingTo)
-				|| (
-					(dayFrom != dayTo) // midnight booking
-					&& (restaurant.businessHours[dayFrom].end != 2400)
-					&& (restaurant.businessHours[dayTo].end != 0000)
-				)
+				|| restaurant.businessHours[bookingDay].end
+						< getTime(data.bookingFrom)
 			) resolve(false);
 
 			resolve(true);
 		}).catch(function(err) {
 			console.log('Catched Error: ', err);
-			resolve(false);
-		});
-	});
-};
-
-bookingValidator.availability = function(Booking, data) {
-	return new Promise(function(resolve, reject) {
-		/*
-		 * These following condition means table not availabe
-		 * 1. requested bookingFrom == existing bookingFrom
-		 * 2. requested bookingTo == existing bookingTo
-		 * 3. requested bookingTo > existing bookingFrom
-		 * && requested bookingFrom < existing bookingTo
-		 */
-		Booking.find()
-		.or([
-			{'bookingFrom': data.bookingFrom },
-			{'bookingTo': data.bookingTo},
-			{
-				'bookingFrom': {$lt: data.bookingTo},
-				'bookingTo': {$gt: data.bookingFrom}
-			}
-		]).then(function(bookings) {
-			console.log('Reservation coincide with: ', bookings.length);
-
-			// Incase of document which is being updated
-			if (
-				(bookings.length === 1)
-				&& JSON.stringify(bookings[0]._id) === JSON.stringify(data._id)
-			)
-				resolve(true);
-
-			if (bookings.length) {
-				// check if these bookings are for the same tables
-				bookings.forEach(function(booking) {
-					data.tables.forEach(function(table) {
-						if (booking.tables.indexOf(table) !== -1) {
-							console.log(booking);
-							resolve(false);
-						};
-					});
-				});
-			}
-			resolve(true);
-		}).catch(function(err) {
-			console.log(err);
 			resolve(false);
 		});
 	});

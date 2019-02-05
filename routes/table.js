@@ -103,6 +103,7 @@ router.put('/', auth.required, function(req, res, next) {
  * List all tables for particular restaurants
  * required data: restaurant=ObjectId in querystring
  */
+//TODO restrict acess
 router.get('/', function(req, res, next) {
 	Table.find({restaurant: req.query.restaurant}).then(function(tables) {
 		let list = [];

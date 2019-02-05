@@ -8,8 +8,9 @@ time.validate = function(value) {
 		&& (value % 100) < 60;
 };
 
-time.get = function(Date) {
-	return (Date.getHours() * 100 + Date.getMinutes());
+time.get = function(date) {
+	date = new Date(date)
+	return (date.getHours() * 100 + date.getMinutes());
 }
 
 let days = [
@@ -21,8 +22,9 @@ let days = [
 	'friday',
 	'saturday'];
 
-time.getDay = function(Date) {
-	return (days[Date.getDay()]);
+time.getDay = function(date) {
+	date = new Date(date)
+	return (days[date.getDay()]);
 }
 
 module.exports = {time};

@@ -16,7 +16,8 @@ environments.staging = {
 			'dbName' : 'RTBS-dev',
 			'useNewUrlParser' : true
 		}
-	}
+	},
+	'defaultBookingDuration': 0100 // HHMM format
 };
 
 // Production environments
@@ -30,7 +31,8 @@ environments.production = {
 			'dbName' : 'RTBS',
 			'useNewUrlParser' : true
 		}
-	}
+	},
+	'defaultBookingDuration': 0100 // HHMM format
 };
 
 // Check command-line arguments for environment
