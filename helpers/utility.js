@@ -27,4 +27,20 @@ time.getDay = function(date) {
 	return (days[date.getDay()]);
 }
 
-module.exports = {time};
+var generatePassword = function(len) {
+	len = (typeof(len) == 'number' && len > 4) ? len : 8;
+
+	// Define all possible characters that could go into a string
+	var possibleCharacters = 'qwertyuiopasdfghjklzxcvbnm1234567890!@#$%^&*';
+
+	// start the final string
+	var str = '';
+	for (i = 1; i <= len; i++) {
+			var randomCharacter = possibleCharacters.charAt(Math.floor(Math.random() * possibleCharacters.length));
+			str += randomCharacter;
+	}
+	// return the final string
+	return str;
+}
+
+module.exports = {time, generatePassword};
