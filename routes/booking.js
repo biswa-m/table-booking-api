@@ -112,7 +112,7 @@ router.get('/', auth.required, function(req, res, next) {
 		Booking.find({customer: req.user.id}).then(function(bookings) {
 			var bookingList = [];
 			bookings.forEach(function(booking) {
-				bookingList.push(booking.toUserJSON());
+				bookingList.push(booking.toCustomerJSON());
 			});
 
 			res.json({bookings: bookingList});
@@ -139,7 +139,7 @@ router.get('/:bookingId', auth.required, function(req, res, next) {
 		}).then(function(booking) {
 			if (!booking) return res.sendStatus(401);
 
-			res.json({booking: booking.toUserJSON()});
+			res.json({booking: booking.toCustomerJSON()});
 		}).catch(next);
 	}).catch(next);
 });

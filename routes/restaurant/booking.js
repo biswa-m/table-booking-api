@@ -31,7 +31,7 @@ router.get('/:restaurantId/:bookingId', auth.required, function(req, res, next) 
 			if (!booking || booking.restaurant != req.params.restaurantId)
 				return res.sendStatus(401);
 
-			return res.json({booking: booking.toAuthUserJSON()});
+			return res.json({booking: booking.toRestauranteurJSON()});
 		}).catch(next);
 	}).catch(next);
 });
@@ -65,7 +65,7 @@ router.put('/:restaurantId/:bookingId/status', auth.required, function(req, res,
 			booking.bookingStatus = req.body.booking.bookingStatus;
 
 			booking.save().then(function(updatedBooking) {
-				return res.json({booking: updatedBooking.toAuthUserJSON()});
+				return res.json({booking: updatedBooking.toRestauranteurJSON()});
 			}).catch(next);
 		}).catch(next);
 	}).catch(next);

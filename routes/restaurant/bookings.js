@@ -26,7 +26,7 @@ router.get('/:restaurantId', auth.required, function(req, res, next) {
 	}).then(async function(restaurant) {
 		if (!restaurant) throwError.unauthorized();
 
-		var query = {};
+		var query = {restaurant: req.params.restaurantId};
 
 		// Check optional parameters to apply search filter
 
@@ -46,7 +46,9 @@ router.get('/:restaurantId', auth.required, function(req, res, next) {
 		if (req.query.bookingStatus)
 			query.bookingStatus = req.query.bookingStatus;
 
-		Booking.find(query).then(function(bookings) {
+		Booking.find(query)
+		.populate('tables', 'tableIdentifier')
+		.then(function(bookings) {
 			res.json({bookings: bookings});
 		}).catch(next);
 	}).catch(next);
