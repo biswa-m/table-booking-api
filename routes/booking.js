@@ -33,66 +33,75 @@ router.post('/', auth.required, function(req, res, next) {
 		if (payload.bookingFrom < Date.now())
 			throwError.validationError();
 
-				// Validate booking time with business hours
-		bookingValidator.businessHours(payload).then(function(valid) {
-			if (!valid) throwError.validationError('Restaurant will be closed at that time');
+		// Validate restaurant id. Only allow verified restaurant
+		Restaurant.findById(payload.restaurant)
+		.then(function(restaurant) {
+			if (!restaurant || !restaurant.verified)
+				throwError.validationError('Invalid restaurant');
 
-			// Find the tables which have bookings during the time
-			Booking.find(
-				{
-					'restaurant': payload.restaurant,
-					'bookingFrom': {
-						$gt: payload.bookingFrom - config.defaultBookingDuration,
-						$lt: payload.bookingFrom + config.defaultBookingDuration
-					}
-				}, 
-				'tables'
-			).then(function(occupiedTables) {
-				console.log('Occupied tables: ', occupiedTables);
+			// Validate booking time with business hours
+			bookingValidator.businessHours(payload).then(function(valid) {
+				if (!valid) throwError.validationError('Restaurant will be closed at that time');
 
-				// Find all the tables of the restaurant with required capacity
-				Table.find(
+				// Find the tables which have bookings during the time
+				Booking.find(
 					{
 						'restaurant': payload.restaurant,
-						'capacity': {$gte: payload.noOfPersons}
-					},
-					'_id capacity'
-				).then(function(allTables) {
-					console.log('All tables: ', allTables);
-					if (!allTables.length) throwError.noTable('Table not available');
-
-					// Find the tables which does not have bookings at the time
-					// Substract the tables ids of occupiedTables from allTables
-					let availableTables = allTables.filter(x => !(JSON.parse(JSON.stringify(occupiedTables.map(a => a.tables[0]))).includes(JSON.parse(JSON.stringify(x._id)))));
-
-					if (!availableTables.length) throwError.noTable('Table not available');
-					console.log('Available tables', availableTables);
-
-					// Select one table with minimum capacity
-					let len = availableTables.length;
-					let min = Infinity;
-					let table = '';
-
-					while(len-- && (min != payload.noOfPersons)) {
-						if (availableTables[len].capacity < min) {
-							min = availableTables[len].capacity;
-							table = availableTables[len]._id;
+						'bookingFrom': {
+							$gt: payload.bookingFrom - config.defaultBookingDuration,
+							$lt: payload.bookingFrom + config.defaultBookingDuration
 						}
-					}
-					console.log('Selected table: ', table)
+					},
+					'tables'
+				).then(function(occupiedTables) {
+					console.log('Occupied tables: ', occupiedTables);
 
-					// Update database
-					var booking = new Booking;
+					// Find all the tables of the restaurant with required capacity
+					Table.find(
+						{
+							'restaurant': payload.restaurant,
+							'capacity': {$gte: payload.noOfPersons}
+						},
+						'_id capacity'
+					).then(function(allTables) {
+						console.log('All tables: ', allTables);
+						if (!allTables.length) throwError.noTable('Table not available');
 
-					booking.customer = req.user.id;
-					booking.restaurant = payload.restaurant;
-					booking.noOfPersons = payload.noOfPersons;
-					booking.bookingFrom = payload.bookingFrom;
-					booking.tables = table;
+						// Find the tables which does not have bookings at the time
+						// Substract the tables ids of occupiedTables from allTables
+						let availableTables = allTables.filter(x =>
+							!(JSON.parse(JSON.stringify(occupiedTables.map(a => a.tables[0])))
+							.includes(JSON.parse(JSON.stringify(x._id)))));
 
-					booking.save()
-					.then(function() {
-						return res.json({booking: booking.toCustomerJSON()});
+						if (!availableTables.length) throwError.noTable('Table not available');
+						console.log('Available tables', availableTables);
+
+						// Select one table with minimum capacity
+						let len = availableTables.length;
+						let min = Infinity;
+						let table = '';
+
+						while(len-- && (min != payload.noOfPersons)) {
+							if (availableTables[len].capacity < min) {
+								min = availableTables[len].capacity;
+								table = availableTables[len]._id;
+							}
+						}
+						console.log('Selected table: ', table)
+
+						// Update database
+						var booking = new Booking;
+
+						booking.customer = req.user.id;
+						booking.restaurant = payload.restaurant;
+						booking.noOfPersons = payload.noOfPersons;
+						booking.bookingFrom = payload.bookingFrom;
+						booking.tables = table;
+
+						booking.save()
+						.then(function() {
+							return res.json({booking: booking.toCustomerJSON()});
+						}).catch(next);
 					}).catch(next);
 				}).catch(next);
 			}).catch(next);

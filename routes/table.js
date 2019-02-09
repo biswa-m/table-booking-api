@@ -104,16 +104,24 @@ router.put('/', auth.required, function(req, res, next) {
  * required data: restaurant=ObjectId in querystring
  */
 //TODO restrict acess
-router.get('/', function(req, res, next) {
-	Table.find({restaurant: req.query.restaurant}).then(function(tables) {
-		let list = [];
+router.get('/', auth.required, function(req, res, next) {
+	// Check user is admin of the restaurant or not
+	Restaurant.findOne({
+		admin: req.user.id,
+		_id: req.query.restaurant
+	}).then(function(restaurant) {
+		if (!restaurant) return res.sendStatus(401);
 
-		tables.forEach(function(table) {
-			list.push(table.viewJSON());
-		});
+		Table.find({restaurant: req.query.restaurant}).then(function(tables) {
+			let list = [];
 
-		return res.json({tables: list});
-	}).catch(next);
+			tables.forEach(function(table) {
+				list.push(table.viewJSON());
+			});
+
+			return res.json({tables: list});
+		}).catch(next);
+	}).catch(next)
 });
 
 module.exports = router;

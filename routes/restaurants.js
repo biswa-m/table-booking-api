@@ -13,6 +13,8 @@ router.get('/', function(req, res, next) {
 	if (req.query.restaurantid) query._id = req.query.restaurantid;
 
 	Restaurant.find(query).then(function(restaurants) {
+		if (!restaurants.length) return res.sendStatus(404);
+
 		let list = []
 
 		restaurants.forEach(function(restaurant) {

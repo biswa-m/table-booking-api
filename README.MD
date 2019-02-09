@@ -14,11 +14,6 @@ Start the API
 
     node app.js
 
-On this command a http server will run in staging environment and start listening to port 3000. 
-This can be tested by following URI
-    
-    http://localhost:3000/ping
-
 ### Starting in production mode
     
     NODE_ENV=production JWT_SECRET=<secret code for JWT> MONGO_URL=<url for mongoDB> node index.js
@@ -138,48 +133,74 @@ each collection will have _id by default
 #### /user
 -	POST - create customer account
 	-	Permission - self
+	- required data: name, phone, email
+	- optional data: password
 -	PUT - update customer details.
 	-	Permission - self
+	-	required data: Authentication token
+	-	optional data: name, email, phone, password (atleast one is required)
 -	GET - get customer data.
 	-	Permission - self
+	-	required data: Authentication token
 #### /user/login
 - POST - validate customer login and return jwt token
 	-	Permission - self
+	-	required data: email, password
 #### /user/restaurant/login
 -	POST - validate RestaurantOwner login and return jwt token
 	-	Permission - self
+	-	required data: email, password
 #### /restaurant
 -	POST - Create new restaurant by RestaurantOwner
+	-	required data: name, address, business hours
+	-	optional data: description
 -	GET - Get restaurants owned by the RestaurantOwner
+	-	required data: Authentication token
 -	PUT - Update restaurant details by RestaurantOwner
+	-	required data: Authentication token
+	-	optional data: name, address, description, businessHours
 
 set business hours to {start: 0, end: 0} for closed day
 #### /restaurant/:restaurantId/:phone
 -	GET - customer details by phone no, if customer has bookings with restaurantOwner
+	-	permission: restaurant owner, if the customer has booking in the restaurant
+	-	required data: Authentication token
 #### /restaurant/bookings/:restaurantId
 -	GET - bookings of a restaturant
+	-	required data: Authentication token
 	-	optional data on query string
 		-	phone, customerId, email, bookingStatus
 #### /restaurant/booking/:restaurantId/:bookingId
 -	GET - get booking of a restaurant by bookingId
+	-	required data: Authentication token
 
 #### /restaurant/booking/:restaurantId/:bookingId/status
 -	PUT - Change bookingStatus
 	-	Confirm / Cancel a booking
+	-	required data: Authentication token, bookingStatus
 
 #### /restaurants
 -	GET - list all verfied restaurants for public view
+	-	permission: public
 #### /table
 -	POST - Add table(s) to their restaurant by RestaurantOwner
+	-	required data: Authentication token, restaurant.id, tables, tableIdentifier, capacity
+	-	optional data: description
 -	PUT - Update single table details
+	-	required data: Authentication token, table.id
+	-	optional data: tableIdentifier, capacity, description
 -	GET - List tables for particular restaurant
+	-	required data: Authorization token, restaurant=ObjectId in querystring
 #### /booking
 -	POST - Create booking in case its available
-	-	return bookingId
+	-	Required data: token, restaurant, noOfPersons, bookingFrom
+	- Permision: login customer
 -	Get - Get all the bookings by user Id
+	-	required data: Authentication token
 	-	permission Customer
 #### /booking/:bookinId
 -	permission- customer, self
+	-	required data: Authentication token
 
 ## API routes to be implemented
 
@@ -199,4 +220,7 @@ add filter by avalibility during datetime
 -	DELETE - Delete a book
 	-	Permission - Customer, RestaurantOwner
 
+# Additional helper app
 
+## Directly access database to create new restaurant owner
+node helpers/app/addRestaurantOwner.js
