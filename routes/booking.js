@@ -109,7 +109,9 @@ router.get('/', auth.required, function(req, res, next) {
 		if (!customer) return res.sendStatus(401);
 
 		// Get booking data of the customer
-		Booking.find({customer: req.user.id}).then(function(bookings) {
+		Booking.find({customer: req.user.id})
+		.populate('restaurant', 'name')
+		.then(function(bookings) {
 			var bookingList = [];
 			bookings.forEach(function(booking) {
 				bookingList.push(booking.toCustomerJSON());

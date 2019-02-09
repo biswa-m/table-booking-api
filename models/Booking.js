@@ -53,6 +53,7 @@ BookingSchema.methods.toCustomerJSON = function() {
 		id: this._id,
 		restaurant: this.restaurant,
 		bookingFrom: this.bookingFrom,
+		noOfPersons: this.noOfPersons,
 		bookingStatus: this.bookingStatus
 	};
 };
