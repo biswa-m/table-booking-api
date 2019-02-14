@@ -11,8 +11,9 @@ var Booking = mongoose.model('Booking');
 /* Get bookings of a restaurant
  * permission - restaurant owner
  * required data - Authentication token
- * optional data on query string - phone, email, customerId, bookingStatus
- * TODO - sortBy, startDate, endDate, startTime, endTime, pageNo
+ * optional data on query string
+ * - phone, email, customerId, bookingStatus, before, after
+ * TODO - sortBy, pageNo
  */
 router.get('/:restaurantId', auth.required, function(req, res, next) {
 	// if regEx of params do not match procceed to next function
@@ -43,8 +44,20 @@ router.get('/:restaurantId', auth.required, function(req, res, next) {
 				else query.customer = customer._id;
 			}).catch(next);
 		}
+
+		// Filter booking status
 		if (req.query.bookingStatus)
 			query.bookingStatus = req.query.bookingStatus;
+
+		// Filter booking time
+		if (req.query.before) {
+			query.bookingFrom = {};
+			query.bookingFrom.$lt = req.query.before;
+		}
+		if (req.query.after) {
+			query.bookingFrom = query.bookingFrom ? query.bookingFrom : {};
+			query.bookingFrom.$gt = req.query.after;
+		}
 
 		Booking.find(query)
 		.populate('tables', 'tableIdentifier')
