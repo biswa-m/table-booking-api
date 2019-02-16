@@ -5,6 +5,9 @@ A web service which will facilate restaurant owners to manage table booking and 
 
 NOTE: This is a tentative backend system design. Further discussion might be needed and a lot of reservation related challenges are not considered - eg: restaurant might have special timing for some particular day. As this is just going to be prototype minimalistic approach is considered.
 
+## Install all dependencies
+		npm install
+
 ## Starting the API in stagging mode
 If mongodb service is not running
 
@@ -161,10 +164,11 @@ each collection will have _id by default
 	-	optional data: name, address, description, businessHours
 
 set business hours to {start: 0, end: 0} for closed day
-#### /restaurant/:restaurantId/:phone
--	GET - customer details by phone no, if customer has bookings with restaurantOwner
+#### /restaurant/:restaurantId/customer
+-	GET - customer details by phone no/ customer id/ email
 	-	permission: restaurant owner, if the customer has booking in the restaurant
 	-	required data: Authentication token
+	- optional data in querystring: id, phone, email (Atleast one is required)
 #### /restaurant/bookings/:restaurantId
 -	GET - bookings of a restaturant
 	-	required data: Authentication token
@@ -173,6 +177,8 @@ set business hours to {start: 0, end: 0} for closed day
 #### /restaurant/booking/:restaurantId/:bookingId
 -	GET - get booking of a restaurant by bookingId
 	-	required data: Authentication token
+-	PUT - update booking of a restaurant by bookingId
+	-	required data: Authentication token, noOfPersons, bookingFrom
 
 #### /restaurant/booking/:restaurantId/:bookingId/status
 -	PUT - Change bookingStatus
@@ -223,4 +229,4 @@ add filter by avalibility during datetime
 # Additional helper app
 
 ## Directly access database to create new restaurant owner
-node helpers/app/addRestaurantOwner.js
+		node helpers/app/addRestaurantOwner.js
