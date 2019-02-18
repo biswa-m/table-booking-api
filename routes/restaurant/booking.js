@@ -4,6 +4,7 @@ var router = require('express').Router();
 var auth = require('../../helpers/auth');
 var throwError = require('../../helpers/throwError');
 var bookingValidator = require('../../helpers/bookingValidator');
+var findAvailableTable = require('../../helpers/findAvailableTable');
 var config = require('../../config');
 
 var Restaurant = mongoose.model('Restaurant');
@@ -66,82 +67,44 @@ router.put('/:restaurantId/:bookingId', auth.required, function(req, res, next) 
 			if (!booking || booking.restaurant != req.params.restaurantId)
 				return res.sendStatus(401);
 
-			if (!req.body.booking) return res.sendStatus(400);
 			var payload = req.body.booking;
+			if (!payload) return res.sendStatus(400);
 
 			// Validate input
 			var regExObjectId = /^[a-f\d]{24}$/i;
 			if (!(payload.noOfPersons = parseInt(payload.noOfPersons))
 				|| payload.noOfPersons <= 0)
 				throwError.validationError();
+
+			if (new Date(parseInt(payload.bookingFrom)) == 'Invalid Date')
+				throwError.validationError();
+
+			payload.bookingFrom = (parseInt(payload.bookingFrom));
 			if (payload.bookingFrom < Date.now())
 				throwError.validationError();
 
-			// Add restaurant id to payload
+			// Add restaurant id and booking id to payload
 			payload.restaurant = booking.restaurant;
+			payload.id = booking._id;
 			console.log(payload);
 
 			// Validate booking time with business hours
 			bookingValidator.businessHours(payload).then(function(valid) {
 				if (!valid) throwError.validationError('Restaurant will be closed at that time');
 
-				// Find the tables which have bookings during the time
-				Booking.find(
-					{
-						'restaurant': payload.restaurant,
-						'bookingFrom': {
-							$gt: payload.bookingFrom - config.defaultBookingDuration,
-							$lt: payload.bookingFrom + config.defaultBookingDuration
-						}
-					},
-					'tables'
-				).then(function(occupiedTables) {
-					console.log('Occupied tables: ', occupiedTables);
+				findAvailableTable(payload, next).then(function(table) {
+					console.log(table);
 
-					// Find all the tables of the restaurant with required capacity
-					Table.find(
-						{
-							'restaurant': payload.restaurant,
-							'capacity': {$gte: payload.noOfPersons}
-						},
-						'_id capacity'
-					).then(function(allTables) {
-						console.log('All tables: ', allTables);
-						if (!allTables.length) throwError.noTable('Table not available');
+					// Update database
+					booking.noOfPersons = payload.noOfPersons;
+					booking.bookingFrom = payload.bookingFrom;
+					booking.tables = table;
 
-						// Find the tables which does not have bookings at the time
-						// Substract the tables ids of occupiedTables from allTables
-						let availableTables = allTables.filter(x =>
-							!(JSON.parse(JSON.stringify(occupiedTables.map(a => a.tables[0])))
-							.includes(JSON.parse(JSON.stringify(x._id)))));
-
-						if (!availableTables.length) throwError.noTable('Table not available');
-						console.log('Available tables', availableTables);
-
-						// Select one table with minimum capacity
-						let len = availableTables.length;
-						let min = Infinity;
-						let table = '';
-
-						while(len-- && (min != payload.noOfPersons)) {
-							if (availableTables[len].capacity < min) {
-								min = availableTables[len].capacity;
-								table = availableTables[len]._id;
-							}
-						}
-						console.log('Selected table: ', table)
-
-						// Update database
-						booking.noOfPersons = payload.noOfPersons;
-						booking.bookingFrom = payload.bookingFrom;
-						booking.tables = table;
-
-						booking.save()
-						.then(function() {
-							Booking.populate(booking, {path: 'tables'}).then(function() {
-								return res.json({booking: booking.toRestauranteurJSON()});
-							});
-						}).catch(next);
+					booking.save()
+					.then(function() {
+						Booking.populate(booking, {path: 'tables'}).then(function() {
+							return res.json({booking: booking.toRestauranteurJSON()});
+						});
 					}).catch(next);
 				}).catch(next);
 			}).catch(next);
@@ -149,7 +112,80 @@ router.put('/:restaurantId/:bookingId', auth.required, function(req, res, next) 
 	}).catch(next);
 });
 
+/* 
+ * Create new booking
+ * permission - restaurant owner
+ * required data - Authentication token, user: {phone}, booking: {bookingFrom, noOfPersons}
+ * optional data - user: {name, email} (optional data required in case of new customer)
+ */ 
+router.post('/:restaurantId', auth.required, function(req, res, next) {
+	console.log('\nProcessing booking request: ');
+	// if regEx of params do not match procceed to next function
+	var regExObjectId = /^[a-f\d]{24}$/i;
+	if (!regExObjectId.test(req.params.restaurantId)) return next();
 
+	// Authorize if user is the admin of the restaurant
+	Restaurant.findOne({
+		_id: req.params.restaurantId,
+		admin: req.user.id
+	}).then(function(restaurant) {
+		if (!restaurant) res.sendStatus(401);
+
+		// Obtain customer id by phone or email
+		let customerQuery = {};
+		if (req.body.user && req.body.user.phone) customerQuery.phone = req.body.user.phone;
+		else if (req.body.user && req.body.user.email) customerQuery.email = req.body.user.email;
+		else throwError.validationError('Kindly provide phone number or email');
+
+		console.log(customerQuery);
+		Customer.findOne(customerQuery).then(function(customer) {
+			// If phone or email is not present in customer database
+			if (!customer) throwError.userNotFound();
+
+			let payload = req.body.booking;
+
+			// Validate input
+			if (!payload
+				|| !(payload.noOfPersons = parseInt(payload.noOfPersons))
+				|| req.body.booking.noOfPersons <= 0)
+				throwError.validationError();
+
+			if (new Date(parseInt(payload.bookingFrom)) == 'Invalid Date')
+				throwError.validationError();
+
+			payload.bookingFrom = (parseInt(payload.bookingFrom));
+			if (payload.bookingFrom < Date.now())
+				throwError.validationError();
+
+			// Add restaurant id to payload
+			payload.restaurant = req.params.restaurantId;
+
+			// Validate booking time with business hours
+			bookingValidator.businessHours(payload).then(function(valid) {
+				if (!valid) throwError.validationError('Restaurant will be closed at that time');
+
+				findAvailableTable(payload, next).then(function(table) {
+					// Update database
+					var booking = new Booking;
+
+					console.log('customer: ', customer);
+					booking.customer = customer._id;
+					booking.restaurant = payload.restaurant;
+					booking.noOfPersons = payload.noOfPersons;
+					booking.bookingFrom = payload.bookingFrom;
+					booking.tables = table;
+
+					booking.save()
+					.then(function() {
+						Booking.populate(booking, {path: 'tables'}).then(function() {
+							return res.json({booking: booking.toRestauranteurJSON()});
+						});
+					}).catch(next);
+				}).catch(next);
+			}).catch(next);
+		}).catch(next);
+	}).catch(next);
+});
 
 /*
  * Change booking status - confirm booking/ cancel booking

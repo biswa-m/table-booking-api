@@ -14,6 +14,14 @@ throwError.unauthorized = function(msg) {
 	throw err;
 };
 
+throwError.userNotFound = function(msg) {
+	msg = msg ? msg : 'User not found';
+	var err = new Error(msg);
+	err.name = 'User not found';
+	err.status = 406;
+	throw err;
+};
+
 throwError.noTable = function(msg) {
 	var err = new Error(msg);
 	err.name = 'booking-failed';

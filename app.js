@@ -27,9 +27,9 @@ app.use(bodyParser.urlencoded({extended: false}));
 
 if (config.envName === 'staging') {
 	app.use(function(req, res, next) {//Get rid of this
+		console.log('\n\n\n\n');
 		console.log('headers: ', req.headers);
 		console.log('body = ', req.body);
-		console.log('\n\n\n\n');
 		next();
 	});
 }
