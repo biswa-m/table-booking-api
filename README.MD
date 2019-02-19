@@ -174,6 +174,13 @@ set business hours to {start: 0, end: 0} for closed day
 	-	required data: Authentication token
 	-	optional data on query string
 		-	phone, customerId, email, bookingStatus
+		- before, after (type: date, to filter by date)
+		-	skip (type: int, skip n results), limit(type: int, show only n rusult)
+		-	sortby (type: array of array, ex: [['bookingFrom', -1], ['bookingStatus', 1]])
+#### /restaurant/booking/:restaurantId/
+-	POST - create new booking to own restaurant by restauranteur
+	-	required data - Authentication token, user: {phone}, booking: {bookingFrom, noOfPersons}
+	-	optional data - user: {name, email} (optional data required in case of new customer)
 #### /restaurant/booking/:restaurantId/:bookingId
 -	GET - get booking of a restaurant by bookingId
 	-	required data: Authentication token

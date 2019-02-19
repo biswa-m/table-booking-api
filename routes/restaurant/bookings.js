@@ -13,7 +13,8 @@ var Booking = mongoose.model('Booking');
  * required data - Authentication token
  * optional data on query string
  * - phone, email, customerId, bookingStatus, before, after
- * TODO - sortBy, pageNo
+ * - skip (type: int, skip n results), limit(type: int, show only n rusult)
+ * - sortby (type: array of array, ex: [['bookingFrom', -1], ['bookingStatus', 1]])
  */
 router.get('/:restaurantId', auth.required, function(req, res, next) {
 	// if regEx of params do not match procceed to next function
@@ -27,6 +28,7 @@ router.get('/:restaurantId', auth.required, function(req, res, next) {
 	}).then(async function(restaurant) {
 		if (!restaurant) throwError.unauthorized();
 
+		// Initialize object for database query
 		var query = {restaurant: req.params.restaurantId};
 
 		// Check optional parameters to apply search filter
@@ -59,10 +61,53 @@ router.get('/:restaurantId', auth.required, function(req, res, next) {
 			query.bookingFrom.$gt = req.query.after;
 		}
 
-		Booking.find(query)
+		// Initialize object for database query options
+		var option = {};
+
+		// Starting row
+		option.skip = (parseInt(req.query.skip)) ? parseInt(req.query.skip) : 0;
+
+		// No of rows
+		option.limit = (parseInt(req.query.limit)) ? parseInt(req.query.limit) : 25;
+
+		// Default sort
+		let sort = [];
+
+		// Validate userdata for sorting
+		if (typeof(req.query.sortby) == 'object' && req.query.sortby instanceof Array) {
+			req.query.sortby.forEach(function(pair) {
+				if (typeof(pair) == 'object' && pair instanceof Array) {
+
+					pair[0] = (typeof(pair[0]) == 'string'
+							&& ['bookingFrom', 'bookingStatus', 'noOfPersons']
+							.indexOf(pair[0]) != -1)
+						? pair[0]
+						: false;
+
+					pair[1] = pair[1] == -1 ? -1 : 1;
+
+					// If valid key value pair
+					if (pair[0]) {
+						sort.push(pair);
+					}
+				}
+			});
+		}
+
+		// If no valid argument for sorting, assign default
+		sort = sort.length ? sort : [['bookingFrom', 1]];
+
+		console.log(option)
+		console.log(sort)
+
+		Booking.find(query, null, option)
+		.sort(sort)
 		.populate('tables', 'tableIdentifier')
 		.then(function(bookings) {
-			res.json({bookings: bookings});
+			Booking.countDocuments(query).then(function(count) {
+				console.log(count);
+				res.json({bookings: bookings, count: count});
+			}).catch(next);
 		}).catch(next);
 	}).catch(next);
 });
