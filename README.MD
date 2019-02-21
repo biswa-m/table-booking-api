@@ -177,6 +177,7 @@ set business hours to {start: 0, end: 0} for closed day
 		- before, after (type: date, to filter by date)
 		-	skip (type: int, skip n results), limit(type: int, show only n rusult)
 		-	sortby (type: array of array, ex: [['bookingFrom', -1], ['bookingStatus', 1]])
+		- countOnly (type: boolean) // To get only the counts of bookings 
 #### /restaurant/booking/:restaurantId/
 -	POST - create new booking to own restaurant by restauranteur
 	-	required data - Authentication token, user: {phone}, booking: {bookingFrom, noOfPersons}

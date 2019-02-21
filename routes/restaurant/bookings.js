@@ -15,6 +15,7 @@ var Booking = mongoose.model('Booking');
  * - phone, email, customerId, bookingStatus, table, before, after
  * - skip (type: int, skip n results), limit(type: int, show only n rusult)
  * - sortby (type: array of array, ex: [['bookingFrom', -1], ['bookingStatus', 1]])
+ * - countOnly (type: boolean) // To get only the counts of bookings 
  */
 router.get('/:restaurantId', auth.required, function(req, res, next) {
 	// if regEx of params do not match procceed to next function
@@ -109,15 +110,24 @@ router.get('/:restaurantId', auth.required, function(req, res, next) {
 		console.log(option)
 		console.log(sort)
 
-		Booking.find(query, null, option)
-		.sort(sort)
-		.populate('tables', 'tableIdentifier')
-		.then(function(bookings) {
+		// To get only the counts
+		if (req.query.countOnly) {
 			Booking.countDocuments(query).then(function(count) {
-				console.log(count);
-				res.json({bookings: bookings, count: count});
+				res.json({count: count});
 			}).catch(next);
-		}).catch(next);
+
+		// To get the bookings as well as counts
+		}else {
+			Booking.find(query, null, option)
+			.sort(sort)
+			.populate('tables', 'tableIdentifier')
+			.then(function(bookings) {
+				Booking.countDocuments(query).then(function(count) {
+					console.log(count);
+					res.json({bookings: bookings, count: count});
+				}).catch(next);
+			}).catch(next);
+		}
 	}).catch(next);
 });
 
