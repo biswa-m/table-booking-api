@@ -173,7 +173,7 @@ set business hours to {start: 0, end: 0} for closed day
 -	GET - bookings of a restaturant
 	-	required data: Authentication token
 	-	optional data on query string
-		-	phone, customerId, email, bookingStatus
+		-	phone, customerId, email, bookingStatus, table
 		- before, after (type: date, to filter by date)
 		-	skip (type: int, skip n results), limit(type: int, show only n rusult)
 		-	sortby (type: array of array, ex: [['bookingFrom', -1], ['bookingStatus', 1]])

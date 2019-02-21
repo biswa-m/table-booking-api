@@ -12,7 +12,7 @@ var Booking = mongoose.model('Booking');
  * permission - restaurant owner
  * required data - Authentication token
  * optional data on query string
- * - phone, email, customerId, bookingStatus, before, after
+ * - phone, email, customerId, bookingStatus, table, before, after
  * - skip (type: int, skip n results), limit(type: int, show only n rusult)
  * - sortby (type: array of array, ex: [['bookingFrom', -1], ['bookingStatus', 1]])
  */
@@ -32,7 +32,8 @@ router.get('/:restaurantId', auth.required, function(req, res, next) {
 		var query = {restaurant: req.params.restaurantId};
 
 		// Check optional parameters to apply search filter
-
+		// if customer id present donot look for email and phone
+		// else if email and/or phone is present obtain customer id from email and/or phone
 		if (req.query.customerId) {
 			query.customer = req.query.customerId;
 		} else if (req.query.phone || req.query.email) {
@@ -45,6 +46,13 @@ router.get('/:restaurantId', auth.required, function(req, res, next) {
 				if (!customer) query.customer = null;
 				else query.customer = customer._id;
 			}).catch(next);
+		}
+
+		// filter alloted table if table id is present
+		if (req.query.table) {
+			if (!regExObjectId.test(req.query.table))
+				throwError.validationError('Invalid table id');
+			query.tables = req.query.table;
 		}
 
 		// Filter booking status
@@ -97,6 +105,7 @@ router.get('/:restaurantId', auth.required, function(req, res, next) {
 		// If no valid argument for sorting, assign default
 		sort = sort.length ? sort : [['bookingFrom', 1]];
 
+		console.log(query)
 		console.log(option)
 		console.log(sort)
 
