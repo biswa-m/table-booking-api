@@ -211,6 +211,10 @@ set business hours to {start: 0, end: 0} for closed day
 #### /restaurant/tables/:restaurantId
 -	GET - List tables for particular restaurant
 	-	required data: Authorization token
+	-	optional data in query string: 
+		-	availability='available' / 'unavailable' / 'status'. To filter tables on given date
+		-	date, in mili-second format. Find out booking status on this time
+		- capacity, mincapacity, maxcapacity // Capacity wise filtering for available tables
 
 #### /booking
 -	POST - Create booking in case its available

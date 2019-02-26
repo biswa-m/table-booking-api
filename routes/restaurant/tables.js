@@ -13,6 +13,7 @@ var Restaurant = mongoose.model('Restaurant');
  * optional data in query string: 
  *	-	availability='available' / 'unavailable' / 'status'. To filter tables on given date
  *	-	date, in mili-second format. Find out booking status on this time
+ *	- capacity, mincapacity, maxcapacity // Capacity wise filtering for available tables
  */
 //TODO restrict acess
 router.get('/:restaurantId', auth.required, function(req, res, next) {
@@ -28,16 +29,20 @@ router.get('/:restaurantId', auth.required, function(req, res, next) {
 				&& ['available', 'unavailable', 'status'].indexOf(req.query.availability) != -1)
 			? req.query.availability : false;
 
-		let date = parseInt(req.query.date) ? parseInt(req.query.date) : (Date.now());
+		let query = {}
+		query.date = parseInt(req.query.date) ? parseInt(req.query.date) : (Date.now());
+		query.capacity = parseInt(req.query.capacity) ? parseInt(req.query.capacity) : null;
+		query.maxcapacity = parseInt(req.query.maxcapacity) ? parseInt(req.query.maxcapacity) : null;
+		query.mincapacity = parseInt(req.query.mincapacity) ? parseInt(req.query.mincapacity) : 0;
 
 		if (!availability) {
 			// Return all tables
-			listTables('all', req.params.restaurantId, date, next)
+			listTables('all', req.params.restaurantId, query, next)
 			.then(function(list) {
 				return res.json({tables: list});
 			}).catch(next);
 		} else {
-			listTables(availability, req.params.restaurantId, date, next)
+			listTables(availability, req.params.restaurantId, query, next)
 			.then(function(list) {
 				return res.json({tables: list});
 			}).catch(next);

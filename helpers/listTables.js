@@ -8,22 +8,22 @@ var config = require('../config');
 var utility = require('./utility');
 
 // List tables based on availability
-var listTables = function(query, restaurant, date, next) {
+var listTables = function(availability, restaurant, query, next) {
 	return new Promise(async function(resolve,reject){
 		// List all tables
-		if (query == 'all') {
-			resolve(await listAllTables(restaurant))	
+		if (availability == 'all') {
+			resolve(await listAllTables(restaurant, query))	
 		}
 
 		let restaurantOpen = undefined;
 
 		// find restaurant is open or close at the given time
-		if (query != 'all') {
+		if (availability != 'all') {
 			// Find the restaurant is open or close at that time
 			await Restaurant.findById(restaurant, 'businessHours')
 			.then(function(data) {
-				let businessHours = (data.businessHours[utility.time.getDay(date)]);
-				let time = utility.time.get(date);
+				let businessHours = (data.businessHours[utility.time.getDay(query.date)]);
+				let time = utility.time.get(query.date);
 
 				if (time < businessHours.start || time > businessHours.end) {
 					restaurantOpen = false;
@@ -36,21 +36,22 @@ var listTables = function(query, restaurant, date, next) {
 
 		// List when restaurant is open
 		if (restaurantOpen)	{	
-			// Find the occupied tables of the restaurant at the given time
-			Booking.find(
-				{
-					'restaurant': restaurant,
-					'bookingFrom': {
-						$gt: date - config.defaultBookingDuration,
-						$lt: date + config.defaultBookingDuration
-					}
-				},
-				'tables'
-			).populate('tables')
+			// Find the occupied tables with required property of the restaurant at the given time
+			let dbQuery = {};
+			dbQuery.restaurant = restaurant;
+
+			// Logic for table availability
+			dbQuery.bookingFrom = {
+				$gt: query.date - config.defaultBookingDuration,
+				$lt: query.date + config.defaultBookingDuration
+			}
+
+			Booking.find(dbQuery, 'tables')
+			.populate('tables')
 			.then(async function(bookings) {
 
 				// For Unavailable tables
-				if (query == 'unavailable') {
+				if (availability == 'unavailable') {
 
 					//return occupied tables with desired keys
 					let list = [];
@@ -60,14 +61,14 @@ var listTables = function(query, restaurant, date, next) {
 
 					resolve(list);
 
-				} else if (query == 'available' || query == 'status') {
+				} else if (availability == 'available' || availability == 'status') {
 
-					let allTables = await listAllTables(restaurant);
+					let allTables = await listAllTables(restaurant, query);
 
 					let occupiedTables = bookings.map(a => a.tables[0].id);
 
 					// To provide booking status of tables
-					if (query == 'status') {
+					if (availability == 'status') {
 						let allTablesWithStatus = allTables;
 						allTablesWithStatus.map(x => {
 							if ((occupiedTables).includes(JSON.parse(JSON.stringify(x.id)))) {
@@ -97,15 +98,15 @@ var listTables = function(query, restaurant, date, next) {
 
 		// When restaurant is closed
 		if (!restaurantOpen)	{	
-			if (query == 'unavailable') {
+			if (availability == 'unavailable') {
 				// All tables will be unavailable when restaurant is closed
-				resolve(await listAllTables(restaurant));
-			} else if (query == 'available') {
+				resolve(await listAllTables(restaurant, query));
+			} else if (availability == 'available') {
 				// No tables will be available wheb restaurant is closed
 				resolve([]);
-			} else if (query == 'status') {
+			} else if (availability == 'status') {
 				// Provide status information with each table
-				let allTables = await listAllTables(restaurant);
+				let allTables = await listAllTables(restaurant, query);
 				allTables = allTables.map(x => {
 					x.availability = 'unavailable';
 					return x;
@@ -117,19 +118,34 @@ var listTables = function(query, restaurant, date, next) {
 };
 
 // Function to read all tables of a restaurant
-var listAllTables = function(restaurant) {
+var listAllTables = function(restaurant, query) {
+	let dbQuery = {};
+	dbQuery.restaurant = restaurant;
+
+	// Query obj for required table capacity
+	if (query.capacity) {
+		dbQuery.capacity = query.capacity;
+	} else if (query.mincapacity || query.maxcapacity) {
+		dbQuery.capacity = {};
+
+		if (query.mincapacity) {
+			dbQuery.capacity.$gte = query.mincapacity;
+		}
+		if (query.maxcapacity) {
+			dbQuery.capacity.$lte = query.maxcapacity;
+		}
+	}
+	console.log(dbQuery);
+
 	return new Promise(function(resolve,reject){
-		Table.find(
-			{
-				'restaurant': restaurant,
-			}
-		).then(function(tables) {
+		Table.find(dbQuery)
+		.then(function(tables) {
 			let list = [];
 			tables.forEach(function(table) {
 				list.push(table.viewJSON());
 			});
 			resolve(list);
-		}).catch();
+		}).catch(e => reject(e));
 	});
 }
 
