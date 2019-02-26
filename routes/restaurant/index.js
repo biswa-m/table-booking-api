@@ -3,6 +3,12 @@ var router = require('express').Router();
 // restaurant Create, Read, Update, Delete 
 router.use('/', require('./restaurant'));
 
+// Add, read, modify and delete tables by restaurant owner
+router.use('/table', require('./table'));
+
+// read list of tables by restaurant owner
+router.use('/tables', require('./tables'));
+
 // list bookings
 router.use('/bookings', require('./bookings'));
 

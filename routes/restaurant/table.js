@@ -1,7 +1,7 @@
 var mongoose = require('mongoose');
 var router = require('express').Router();
 
-var auth = require('../helpers/auth');
+var auth = require('../../helpers/auth');
 
 var Table = mongoose.model('Table');
 var Restaurant = mongoose.model('Restaurant');
@@ -12,16 +12,20 @@ var RestaurantOwner = mongoose.model('RestaurantOwner');
  * required data: Authentication token, restaurant.id, tables, tableIdentifier, capacity
  * optional data: description
  */
-router.post('/', auth.required, function(req, res, next) {
+router.post('/:restaurantId', auth.required, function(req, res, next) {
+	// if regEx of params do not match procceed to next function
+	var regExObjectId = /^[a-f\d]{24}$/i;
+	if (!regExObjectId.test(req.params.restaurantId)) return next();
+
 	RestaurantOwner.findById(req.user.id).then(function(restaurantOwner) {
 		if (!restaurantOwner) return res.sendStatus(401);
 
-		if (!req.body.restaurant || !req.body.tables || !(req.body.tables instanceof Array))
+		if (!req.body.tables || !(req.body.tables instanceof Array))
 			return res.sendStatus(400);
 
 		Restaurant.findOne({
 			admin: req.user.id,
-			_id: req.body.restaurant.id
+			_id: req.params.restaurantId
 		}).then(function(restaurant) {
 			if (!restaurant) return res.sendStatus(401);
 
@@ -37,7 +41,7 @@ router.post('/', auth.required, function(req, res, next) {
 				}
 
 				let data = {
-					restaurant: req.body.restaurant.id,
+					restaurant: req.params.restaurantId,
 					tableIdentifier: table.tableIdentifier,
 					capacity: table.capacity,
 					description: table.description
@@ -100,26 +104,19 @@ router.put('/', auth.required, function(req, res, next) {
 });
 
 /*
- * List all tables for particular restaurants
- * required data: restaurant=ObjectId in querystring
+ * Read data of a table of a particular restaurant
  */
 //TODO restrict acess
-router.get('/', auth.required, function(req, res, next) {
+router.get('/:restaurantId/:tableId', auth.required, function(req, res, next) {
 	// Check user is admin of the restaurant or not
 	Restaurant.findOne({
 		admin: req.user.id,
-		_id: req.query.restaurant
+		_id: req.params.restaurantId
 	}).then(function(restaurant) {
 		if (!restaurant) return res.sendStatus(401);
 
-		Table.find({restaurant: req.query.restaurant}).then(function(tables) {
-			let list = [];
-
-			tables.forEach(function(table) {
-				list.push(table.viewJSON());
-			});
-
-			return res.json({tables: list});
+		Table.findById(req.params.tableId).then(function(table) {
+			return res.json({table: table.viewJSON()});
 		}).catch(next);
 	}).catch(next)
 });

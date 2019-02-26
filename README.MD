@@ -196,15 +196,22 @@ set business hours to {start: 0, end: 0} for closed day
 #### /restaurants
 -	GET - list all verfied restaurants for public view
 	-	permission: public
-#### /table
+
+#### /restaurant/table/:restaurantId
 -	POST - Add table(s) to their restaurant by RestaurantOwner
-	-	required data: Authentication token, restaurant.id, tables, tableIdentifier, capacity
+	-	required data: Authentication token, tables, tableIdentifier, capacity
 	-	optional data: description
+#### /restaurant/table/:restaurantId/:tableId
+-	GET - Read table details
+	-	required data: Authorization token
+#### /restaurant/table
 -	PUT - Update single table details
 	-	required data: Authentication token, table.id
 	-	optional data: tableIdentifier, capacity, description
+#### /restaurant/tables/:restaurantId
 -	GET - List tables for particular restaurant
-	-	required data: Authorization token, restaurant=ObjectId in querystring
+	-	required data: Authorization token
+
 #### /booking
 -	POST - Create booking in case its available
 	-	Required data: token, restaurant, noOfPersons, bookingFrom
