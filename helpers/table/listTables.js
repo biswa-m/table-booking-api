@@ -46,6 +46,9 @@ var listTables = function(availability, restaurant, query, next) {
 				$lt: query.date + config.defaultBookingDuration
 			}
 
+			// Booking id to be ignore, usecase: updating booking
+			dbQuery._id = {$ne: query.bookingId}
+
 			Booking.find(dbQuery, 'tables')
 			.populate('tables')
 			.then(async function(bookings) {

@@ -181,12 +181,16 @@ set business hours to {start: 0, end: 0} for closed day
 #### /restaurant/booking/:restaurantId/
 -	POST - create new booking to own restaurant by restauranteur
 	-	required data - Authentication token, user: {phone}, booking: {bookingFrom, noOfPersons}
-	-	optional data - user: {name, email} (optional data required in case of new customer)
+	-	optional data
+		-	user: {name, email} (optional data required in case of new customer)
+		-	table (type: objectId)
+
 #### /restaurant/booking/:restaurantId/:bookingId
 -	GET - get booking of a restaurant by bookingId
 	-	required data: Authentication token
 -	PUT - update booking of a restaurant by bookingId
 	-	required data: Authentication token, noOfPersons, bookingFrom
+	- optional data: table (type: objectId)
 
 #### /restaurant/booking/:restaurantId/:bookingId/status
 -	PUT - Change bookingStatus

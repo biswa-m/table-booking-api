@@ -46,8 +46,8 @@ router.get('/:restaurantId/:bookingId', auth.required, function(req, res, next) 
  * Update booking
  * permission - restaurant owner
  * required data - Authentication token
- * optional data - noOfPersons, bookingFrom, bookingStatus 
- * TODO - tables, add customer's additional contact info
+ * optional data
+ *	- noOfPersons, bookingFrom, bookingStatus, table (objectId)
  */ 
 router.put('/:restaurantId/:bookingId', auth.required, function(req, res, next) {
 	console.log('\nProcessing updation request: ');
@@ -75,7 +75,10 @@ router.put('/:restaurantId/:bookingId', auth.required, function(req, res, next) 
 			var regExObjectId = /^[a-f\d]{24}$/i;
 			if (!(payload.noOfPersons = parseInt(payload.noOfPersons))
 				|| payload.noOfPersons <= 0)
-				throwError.validationError();
+				throwError.validationError('Invalid number of persons');
+			if (payload.table && !regExObjectId.test(payload.table)) {
+				throwError.validationError('Invalid table');
+			}
 
 			if (new Date(parseInt(payload.bookingFrom)) == 'Invalid Date')
 				throwError.validationError();
@@ -90,23 +93,41 @@ router.put('/:restaurantId/:bookingId', auth.required, function(req, res, next) 
 			console.log(payload);
 
 			// Validate booking time with business hours
-			bookingValidator.businessHours(payload).then(function(valid) {
+			bookingValidator.businessHours(payload).then(async function(valid) {
 				if (!valid) throwError.validationError('Restaurant will be closed at that time');
 
-				findAvailableTable(payload, next).then(function(table) {
-					console.log(table);
+				let table = null;
+				
+				// Manual table selection
+				if (payload.table) {
+					let available = await checkAvailability(
+						payload.table,
+						req.params.restaurantId,
+						payload.bookingFrom,
+						next,
+						payload.id
+					);
 
-					// Update database
-					booking.noOfPersons = payload.noOfPersons;
-					booking.bookingFrom = payload.bookingFrom;
-					booking.tables = table;
+					if (!available)
+						throwError.validationError('Table not available');
 
-					booking.save()
-					.then(function() {
-						Booking.populate(booking, {path: 'tables'}).then(function() {
-							return res.json({booking: booking.toRestauranteurJSON()});
-						});
-					}).catch(next);
+					table = payload.table;
+				} else {
+					table = await findAvailableTable(payload, next);
+				
+					if (!table)	throwError.validationError('Table not available');
+				}
+
+				// Update database
+				booking.noOfPersons = payload.noOfPersons;
+				booking.bookingFrom = payload.bookingFrom;
+				booking.tables = table;
+
+				booking.save()
+				.then(function() {
+					Booking.populate(booking, {path: 'tables'}).then(function() {
+						return res.json({booking: booking.toRestauranteurJSON()});
+					});
 				}).catch(next);
 			}).catch(next);
 		}).catch(next);
@@ -184,7 +205,7 @@ router.post('/:restaurantId', auth.required, function(req, res, next) {
 
 					table = payload.table;
 				} else {
-					table = await findAvailableTable(payload, next)
+					table = await findAvailableTable(payload, next);
 
 					if (!table) {
 						throwError.validationError('Table not available');

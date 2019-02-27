@@ -14,6 +14,7 @@ var Restaurant = mongoose.model('Restaurant');
  *	-	availability='available' / 'unavailable' / 'status'. To filter tables on given date
  *	-	date, in mili-second format. Find out booking status on this time
  *	- capacity, mincapacity, maxcapacity // Capacity wise filtering for available tables
+ *	- bookingId // ignore this booking id while checking availability
  */
 //TODO restrict acess
 router.get('/:restaurantId', auth.required, function(req, res, next) {
@@ -30,6 +31,7 @@ router.get('/:restaurantId', auth.required, function(req, res, next) {
 			? req.query.availability : false;
 
 		let query = {}
+		query.bookingId = req.query.bookingId;
 		query.date = parseInt(req.query.date) ? parseInt(req.query.date) : (Date.now());
 		query.capacity = parseInt(req.query.capacity) ? parseInt(req.query.capacity) : null;
 		query.maxcapacity = parseInt(req.query.maxcapacity) ? parseInt(req.query.maxcapacity) : null;

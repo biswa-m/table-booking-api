@@ -8,7 +8,7 @@ var config = require('../../config');
 var utility = require('../utility');
 
 // Check availability of a table at one instance
-var checkAvailability = function(tableId, restaurant, date, next) {
+var checkAvailability = function(tableId, restaurant, date, next, bookingId) {
 	console.log('Checking the availability of table ', tableId);
 	return new Promise(async function(resolve,reject){
 		// Find the restaurant is open or close at that time
@@ -26,6 +26,7 @@ var checkAvailability = function(tableId, restaurant, date, next) {
 				// Search bookings for occupied tables
 				Booking.find({
 					restaurant: restaurant,
+					_id: {$ne: bookingId},
 					bookingFrom: {
 						$gt: date - config.defaultBookingDuration,
 						$lt: date + config.defaultBookingDuration
