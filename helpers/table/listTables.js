@@ -4,8 +4,8 @@ var Table = mongoose.model('Table');
 var Booking = mongoose.model('Booking');
 var Restaurant = mongoose.model('Restaurant');
 
-var config = require('../config');
-var utility = require('./utility');
+var config = require('../../config');
+var utility = require('../utility');
 
 // List tables based on availability
 var listTables = function(availability, restaurant, query, next) {

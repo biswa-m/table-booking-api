@@ -4,7 +4,8 @@ var router = require('express').Router();
 var auth = require('../../helpers/auth');
 var throwError = require('../../helpers/throwError');
 var bookingValidator = require('../../helpers/bookingValidator');
-var findAvailableTable = require('../../helpers/findAvailableTable');
+var findAvailableTable = require('../../helpers/table/findAvailableTable');
+var checkAvailability = require('../../helpers/table/checkAvailability');
 var config = require('../../config');
 
 var Restaurant = mongoose.model('Restaurant');
@@ -116,7 +117,9 @@ router.put('/:restaurantId/:bookingId', auth.required, function(req, res, next) 
  * Create new booking
  * permission - restaurant owner
  * required data - Authentication token, user: {phone}, booking: {bookingFrom, noOfPersons}
- * optional data - user: {name, email} (optional data required in case of new customer)
+ * optional data
+ *	-	user: {name, email} (optional data required in case of new customer)
+ *	-	table (type: ObjectId)
  */ 
 router.post('/:restaurantId', auth.required, function(req, res, next) {
 	console.log('\nProcessing booking request: ');
@@ -151,36 +154,58 @@ router.post('/:restaurantId', auth.required, function(req, res, next) {
 				throwError.validationError();
 
 			if (new Date(parseInt(payload.bookingFrom)) == 'Invalid Date')
-				throwError.validationError();
+				throwError.validationError('Invalid date');
 
 			payload.bookingFrom = (parseInt(payload.bookingFrom));
 			if (payload.bookingFrom < Date.now())
-				throwError.validationError();
+				throwError.validationError('Invalid date');
 
 			// Add restaurant id to payload
 			payload.restaurant = req.params.restaurantId;
 
 			// Validate booking time with business hours
-			bookingValidator.businessHours(payload).then(function(valid) {
+			bookingValidator.businessHours(payload)
+			.then(async function(valid) {
 				if (!valid) throwError.validationError('Restaurant will be closed at that time');
 
-				findAvailableTable(payload, next).then(function(table) {
-					// Update database
-					var booking = new Booking;
+				let table = null;
 
-					console.log('customer: ', customer);
-					booking.customer = customer._id;
-					booking.restaurant = payload.restaurant;
-					booking.noOfPersons = payload.noOfPersons;
-					booking.bookingFrom = payload.bookingFrom;
-					booking.tables = table;
+				// Manual table selection
+				if (payload.table) {
+					let available = await checkAvailability(
+						payload.table,
+						req.params.restaurantId,
+						payload.bookingFrom,
+						next
+					);
 
-					booking.save()
-					.then(function() {
-						Booking.populate(booking, {path: 'tables'}).then(function() {
-							return res.json({booking: booking.toRestauranteurJSON()});
-						});
-					}).catch(next);
+					if (!available)
+						throwError.validationError('Table not available');
+
+					table = payload.table;
+				} else {
+					table = await findAvailableTable(payload, next)
+
+					if (!table) {
+						throwError.validationError('Table not available');
+					}
+				}
+
+				// Update database
+				var booking = new Booking;
+
+				console.log('customer: ', customer);
+				booking.customer = customer._id;
+				booking.restaurant = payload.restaurant;
+				booking.noOfPersons = payload.noOfPersons;
+				booking.bookingFrom = payload.bookingFrom;
+				booking.tables = table;
+
+				booking.save()
+				.then(function() {
+					Booking.populate(booking, {path: 'tables'}).then(function() {
+						return res.json({booking: booking.toRestauranteurJSON()});
+					});
 				}).catch(next);
 			}).catch(next);
 		}).catch(next);

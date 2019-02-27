@@ -2,7 +2,7 @@ var mongoose = require('mongoose');
 var router = require('express').Router();
 
 var auth = require('../../helpers/auth');
-var listTables = require('../../helpers/listTables');
+var listTables = require('../../helpers/table/listTables');
 
 var Table = mongoose.model('Table');
 var Restaurant = mongoose.model('Restaurant');

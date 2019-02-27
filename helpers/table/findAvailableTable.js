@@ -3,8 +3,8 @@ var mongoose = require('mongoose');
 var Table = mongoose.model('Table');
 var Booking = mongoose.model('Booking');
 
-var config = require('../config');
-var throwError = require('./throwError');
+var config = require('../../config');
+var throwError = require('../throwError');
 
 var findAvailbleTable = function(payload, next) {
 	return new Promise(function(resolve,reject){
